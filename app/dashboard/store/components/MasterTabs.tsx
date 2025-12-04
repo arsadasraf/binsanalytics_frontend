@@ -24,6 +24,7 @@ export default function MasterTabs({ masterTab, setMasterTab }: MasterTabsProps)
         { value: "location", label: "Locations" },
         { value: "category", label: "Categories" },
         { value: "material", label: "Materials" },
+        { value: "grn-history", label: "GRN History" },
     ];
 
     return (

@@ -31,8 +31,24 @@ export default function MastersTable({ data, masterTab, onEdit, onDelete }: Mast
             {/* Table header with conditional columns */}
             <thead className="bg-gray-50 border-b border-gray-200">
                 <tr>
-                    <th className="px-6 py-3 text-left font-semibold text-gray-900">Name</th>
-                    <th className="px-6 py-3 text-left font-semibold text-gray-900">Code</th>
+                    {masterTab !== "grn-history" && (
+                        <>
+                            <th className="px-6 py-3 text-left font-semibold text-gray-900">Name</th>
+                            <th className="px-6 py-3 text-left font-semibold text-gray-900">Code</th>
+                        </>
+                    )}
+
+                    {/* GRN History columns */}
+                    {masterTab === "grn-history" && (
+                        <>
+                            <th className="px-6 py-3 text-left font-semibold text-gray-900">GRN Number</th>
+                            <th className="px-6 py-3 text-left font-semibold text-gray-900">Date</th>
+                            <th className="px-6 py-3 text-left font-semibold text-gray-900">Supplier</th>
+                            <th className="px-6 py-3 text-left font-semibold text-gray-900">Material</th>
+                            <th className="px-6 py-3 text-left font-semibold text-gray-900">Quantity</th>
+                            <th className="px-6 py-3 text-left font-semibold text-gray-900">Status</th>
+                        </>
+                    )}
 
                     {/* Additional columns for vendor and customer */}
                     {(masterTab === "vendor" || masterTab === "customer") && (
@@ -58,22 +74,53 @@ export default function MastersTable({ data, masterTab, onEdit, onDelete }: Mast
             <tbody className="divide-y divide-gray-200">
                 {data.map((item) => (
                     <tr key={item._id} className="hover:bg-gray-50 transition-colors">
-                        <td className="px-6 py-4 font-medium text-gray-900">{item.name}</td>
-                        <td className="px-6 py-4 text-gray-600">{item.code}</td>
-
-                        {/* Conditional columns for vendor/customer */}
-                        {(masterTab === "vendor" || masterTab === "customer") && (
+                        {/* GRN History rows */}
+                        {masterTab === "grn-history" && (
                             <>
-                                <td className="px-6 py-4 text-gray-600">{item.contactPerson}</td>
-                                <td className="px-6 py-4 text-gray-600">{item.email}</td>
+                                <td className="px-6 py-4 font-medium text-gray-900">{item.grnNumber}</td>
+                                <td className="px-6 py-4 text-gray-600">
+                                    {new Date(item.date).toLocaleDateString()}
+                                </td>
+                                <td className="px-6 py-4 text-gray-600">{item.supplierName}</td>
+                                <td className="px-6 py-4 text-gray-600">
+                                    {item.items?.[0]?.materialName || '-'}
+                                </td>
+                                <td className="px-6 py-4 text-gray-600">
+                                    {item.items?.[0]?.quantity} {item.items?.[0]?.unit}
+                                </td>
+                                <td className="px-6 py-4">
+                                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${item.status === 'Received' ? 'bg-green-100 text-green-800' :
+                                            item.status === 'Accepted' ? 'bg-blue-100 text-blue-800' :
+                                                item.status === 'Rejected' ? 'bg-red-100 text-red-800' :
+                                                    'bg-gray-100 text-gray-800'
+                                        }`}>
+                                        {item.status}
+                                    </span>
+                                </td>
                             </>
                         )}
 
-                        {/* Conditional columns for material */}
-                        {masterTab === "material" && (
+                        {/* Regular master data rows */}
+                        {masterTab !== "grn-history" && (
                             <>
-                                <td className="px-6 py-4 text-gray-600">{item.category?.name || '-'}</td>
-                                <td className="px-6 py-4 text-gray-600">{item.category?.unit || '-'}</td>
+                                <td className="px-6 py-4 font-medium text-gray-900">{item.name}</td>
+                                <td className="px-6 py-4 text-gray-600">{item.code}</td>
+
+                                {/* Conditional columns for vendor/customer */}
+                                {(masterTab === "vendor" || masterTab === "customer") && (
+                                    <>
+                                        <td className="px-6 py-4 text-gray-600">{item.contactPerson}</td>
+                                        <td className="px-6 py-4 text-gray-600">{item.email}</td>
+                                    </>
+                                )}
+
+                                {/* Conditional columns for material */}
+                                {masterTab === "material" && (
+                                    <>
+                                        <td className="px-6 py-4 text-gray-600">{item.category?.name || '-'}</td>
+                                        <td className="px-6 py-4 text-gray-600">{item.category?.unit || '-'}</td>
+                                    </>
+                                )}
                             </>
                         )}
 

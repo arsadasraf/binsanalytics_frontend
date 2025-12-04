@@ -20,7 +20,7 @@ import ErrorAlert from "@/src/components/ErrorAlert";
 import SuccessAlert from "@/src/components/SuccessAlert";
 
 // Import custom types
-import { TabType, MasterType } from "./types/store.types";
+import { TabType, MasterType, GRNFormData } from "./types/store.types";
 
 // Import custom hook for business logic
 import { useStoreData } from "./components/hooks/useStoreData";
@@ -49,6 +49,7 @@ function StoreContent() {
 
   // State for GRN modal
   const [showGRNModal, setShowGRNModal] = useState(false);
+  const [editingGRN, setEditingGRN] = useState<GRNFormData | undefined>(undefined);
 
   // Get authentication token from localStorage
   const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
@@ -78,21 +79,53 @@ function StoreContent() {
     handleDelete,
     handleCancel,
     handleGRNSubmit,
+    handleGRNUpdate,
     addItem,
     updateItem,
     removeItem,
   } = useStoreData(activeTab, masterTab, token);
 
   /**
-   * Handles GRN creation from modal
+   * Handles GRN creation/update from modal
    * Closes modal on success
    */
-  const onGRNSubmit = async (grnData: any) => {
+  const onGRNSubmit = async (grnData: GRNFormData) => {
     try {
-      await handleGRNSubmit(grnData);
+      if (editingGRN && editingGRN._id) {
+        await handleGRNUpdate(editingGRN._id, grnData);
+      } else {
+        await handleGRNSubmit(grnData);
+      }
       setShowGRNModal(false);
+      setEditingGRN(undefined);
     } catch (err) {
-      // Error is already handled in handleGRNSubmit
+      // Error is already handled in hook
+    }
+  };
+
+  /**
+   * Handles edit action for masters
+   * Intercepts GRN history edit to show GRN modal
+   */
+  const handleMasterEdit = (item: any) => {
+    if (masterTab === "grn-history") {
+      // Prepare GRN data for modal
+      const grnData: GRNFormData = {
+        _id: item._id,
+        grnNumber: item.grnNumber,
+        date: item.date,
+        material: item.items?.[0]?.material?._id || item.items?.[0]?.material || '',
+        materialName: item.items?.[0]?.materialName,
+        quantity: item.items?.[0]?.quantity,
+        unit: item.items?.[0]?.unit,
+        supplier: item.supplier?._id || item.supplier || '',
+        locationId: '', // Not stored in GRN, user needs to re-select if needed
+        category: item.items?.[0]?.material?.category?.name || '',
+      };
+      setEditingGRN(grnData);
+      setShowGRNModal(true);
+    } else {
+      handleEdit(item);
     }
   };
 
@@ -138,7 +171,10 @@ function StoreContent() {
         {activeTab === "home" && (
           <div className="mb-6">
             <button
-              onClick={() => setShowGRNModal(true)}
+              onClick={() => {
+                setEditingGRN(undefined);
+                setShowGRNModal(true);
+              }}
               className="px-6 py-3 bg-indigo-600 text-white rounded-lg font-semibold hover:bg-indigo-700 transition-colors flex items-center gap-2"
             >
               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
@@ -160,6 +196,7 @@ function StoreContent() {
           loading={loading}
           vendors={vendors}
           customers={customers}
+          locations={locations}
           categories={categories}
           onSubmit={handleSubmit}
           onCancel={handleCancel}
@@ -174,20 +211,25 @@ function StoreContent() {
           masterTab={masterTab}
           data={data}
           loading={loading}
-          onEdit={handleEdit}
+          onEdit={handleMasterEdit}
           onDelete={handleDelete}
         />
 
         {/* GRN Modal */}
         <GRNModal
           isOpen={showGRNModal}
-          onClose={() => setShowGRNModal(false)}
+          onClose={() => {
+            setShowGRNModal(false);
+            setEditingGRN(undefined);
+          }}
           onSubmit={onGRNSubmit}
           materials={materials}
           vendors={vendors}
           locations={locations}
           categories={categories}
           loading={loading}
+          initialData={editingGRN}
+          isEditing={!!editingGRN}
         />
       </div>
 
@@ -224,4 +266,3 @@ export default function StorePage() {
     </Suspense>
   );
 }
-

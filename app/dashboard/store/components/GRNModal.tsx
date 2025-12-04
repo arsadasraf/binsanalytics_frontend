@@ -33,6 +33,8 @@ export default function GRNModal({
     locations,
     categories,
     loading,
+    initialData,
+    isEditing = false,
 }: GRNModalProps) {
     // Initialize form data with default values
     const [formData, setFormData] = useState<GRNFormData>({
@@ -64,15 +66,25 @@ export default function GRNModal({
         return `GRN/${year}/${month}/${sequence}`;
     };
 
-    // Generate GRN number when modal opens
+    // Generate GRN number when modal opens or populate with initial data
     useEffect(() => {
         if (isOpen) {
-            setFormData(prev => ({
-                ...prev,
-                grnNumber: generateGRNNumber(),
-            }));
+            if (isEditing && initialData) {
+                setFormData(initialData);
+            } else {
+                setFormData({
+                    grnNumber: generateGRNNumber(),
+                    date: new Date().toISOString().split('T')[0],
+                    material: '',
+                    quantity: 0,
+                    unit: '',
+                    supplier: '',
+                    locationId: '',
+                    category: '',
+                });
+            }
         }
-    }, [isOpen]);
+    }, [isOpen, isEditing, initialData]);
 
     /**
      * Handles material selection
@@ -110,7 +122,7 @@ export default function GRNModal({
                 <div className="bg-white rounded-2xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
                     {/* Modal header */}
                     <div className="flex items-center justify-between p-6 border-b">
-                        <h2 className="text-2xl font-bold text-gray-900">Create GRN</h2>
+                        <h2 className="text-2xl font-bold text-gray-900">{isEditing ? 'Edit GRN' : 'Create GRN'}</h2>
                         <button
                             onClick={onClose}
                             className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
@@ -144,7 +156,7 @@ export default function GRNModal({
                                 <input
                                     type="date"
                                     required
-                                    value={formData.date}
+                                    value={formData.date ? new Date(formData.date).toISOString().split('T')[0] : ''}
                                     onChange={(e) => setFormData({ ...formData, date: e.target.value })}
                                     className="input-field"
                                 />
@@ -263,7 +275,7 @@ export default function GRNModal({
                                 disabled={loading}
                                 className="flex-1 bg-indigo-600 text-white py-3 rounded-lg font-semibold hover:bg-indigo-700 transition-colors disabled:opacity-50"
                             >
-                                {loading ? 'Creating...' : 'Create GRN'}
+                                {loading ? 'Saving...' : isEditing ? 'Update GRN' : 'Create GRN'}
                             </button>
                             <button
                                 type="button"

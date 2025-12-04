@@ -81,6 +81,7 @@ export function useStoreData(activeTab: TabType, masterTab: MasterType, token: s
                     else if (masterTab === "location") endpoint = "/api/store/location";
                     else if (masterTab === "category") endpoint = "/api/store/category";
                     else if (masterTab === "material") endpoint = "/api/store/material";
+                    else if (masterTab === "grn-history") endpoint = "/api/store/grn";
                     break;
             }
 
@@ -236,7 +237,11 @@ export function useStoreData(activeTab: TabType, masterTab: MasterType, token: s
 
             // Determine endpoint based on active tab
             if (activeTab === "masters") {
-                endpoint = `/api/store/${masterTab}/${id}`;
+                if (masterTab === "grn-history") {
+                    endpoint = `/api/store/grn/${id}`;
+                } else {
+                    endpoint = `/api/store/${masterTab}/${id}`;
+                }
             } else if (activeTab === "grn") {
                 endpoint = `/api/store/grn/${id}`;
             } else if (activeTab === "dc") {
@@ -326,6 +331,29 @@ export function useStoreData(activeTab: TabType, masterTab: MasterType, token: s
         }
     };
 
+    /**
+     * Handles GRN update from modal
+     * @param id - GRN ID
+     * @param grnData - GRN form data from modal
+     */
+    const handleGRNUpdate = async (id: string, grnData: GRNFormData) => {
+        if (!token) return;
+
+        setLoading(true);
+        try {
+            await apiPut(`/api/store/grn/${id}`, grnData, token);
+            setSuccess("GRN updated successfully");
+
+            // Refresh inventory data
+            fetchData();
+        } catch (err: any) {
+            setError(err.message || "Failed to update GRN");
+            throw err; // Re-throw to let modal handle it
+        } finally {
+            setLoading(false);
+        }
+    };
+
     // ==================== Return Hook Interface ====================
 
     return {
@@ -357,6 +385,7 @@ export function useStoreData(activeTab: TabType, masterTab: MasterType, token: s
         handleDelete,
         handleCancel,
         handleGRNSubmit,
+        handleGRNUpdate,
         addItem,
         updateItem,
         removeItem,

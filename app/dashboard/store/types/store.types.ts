@@ -7,7 +7,7 @@
 export type TabType = "home" | "material-issue" | "grn" | "dc" | "billing" | "po" | "masters";
 
 // Master data type for master tab navigation
-export type MasterType = "vendor" | "customer" | "location" | "category" | "material";
+export type MasterType = "vendor" | "customer" | "location" | "category" | "material" | "grn-history";
 
 // Item interface for transaction items (GRN, DC, PO, Billing)
 export interface Item {
@@ -120,6 +120,20 @@ export interface Transaction {
     totalAmount?: number;
 }
 
+// GRN Form Data for new workflow
+export interface GRNFormData {
+    _id?: string; // Added for edit mode
+    grnNumber?: string;  // Auto-generated
+    date: string;
+    material: string;  // Material ID from master (not inventory)
+    materialName?: string;
+    quantity: number;
+    unit?: string;  // Auto-filled from material's category
+    supplier: string;
+    locationId: string;
+    category?: string;  // Auto-filled from material's category
+}
+
 // Props interfaces for components
 export interface StoreHeaderProps {
     // No props needed - static content
@@ -146,6 +160,7 @@ export interface StoreFormProps {
     vendors: Vendor[];
     customers: Customer[];
     locations: Location[];
+    categories: Category[];
     onSubmit: (e: React.FormEvent) => void;
     onCancel: () => void;
     addItem: () => void;
@@ -184,19 +199,6 @@ export interface TableRowActionsProps {
     onDelete: (id: string) => void;
 }
 
-// GRN Form Data for new workflow
-export interface GRNFormData {
-    grnNumber?: string;  // Auto-generated
-    date: string;
-    material: string;  // Material ID from master (not inventory)
-    materialName?: string;
-    quantity: number;
-    unit?: string;  // Auto-filled from material's category
-    supplier: string;
-    locationId: string;
-    category?: string;  // Auto-filled from material's category
-}
-
 // GRN Modal Props
 export interface GRNModalProps {
     isOpen: boolean;
@@ -207,4 +209,6 @@ export interface GRNModalProps {
     locations: Location[];
     categories: Category[];  // Still needed for material form
     loading: boolean;
+    initialData?: GRNFormData;
+    isEditing?: boolean;
 }
