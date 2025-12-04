@@ -88,12 +88,33 @@ export default function MasterForm({ formData, setFormData, masterTab, categorie
                         onChange={(e) => setFormData({ ...formData, gst: e.target.value })}
                         className="input-field"
                     />
-                    <textarea
-                        placeholder="Address"
-                        value={formData.address || ""}
-                        onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                        className="input-field sm:col-span-2"
-                    />
+
+                    {/* Address fields - different for vendor vs customer */}
+                    {masterTab === "vendor" && (
+                        <textarea
+                            placeholder="Address"
+                            value={formData.address || ""}
+                            onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                            className="input-field sm:col-span-2"
+                        />
+                    )}
+
+                    {masterTab === "customer" && (
+                        <>
+                            <textarea
+                                placeholder="Billing Address"
+                                value={formData.billingAddress || ""}
+                                onChange={(e) => setFormData({ ...formData, billingAddress: e.target.value })}
+                                className="input-field"
+                            />
+                            <textarea
+                                placeholder="Shipping Address"
+                                value={formData.shippingAddress || ""}
+                                onChange={(e) => setFormData({ ...formData, shippingAddress: e.target.value })}
+                                className="input-field"
+                            />
+                        </>
+                    )}
 
                     {/* Bank Details Section */}
                     <div className="sm:col-span-2 border-t pt-4 mt-2">

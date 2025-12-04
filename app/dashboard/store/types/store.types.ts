@@ -38,6 +38,8 @@ export interface FormData {
     email?: string;
     gst?: string;
     address?: string;
+    billingAddress?: string;  // For customer
+    shippingAddress?: string;  // For customer
     description?: string;
     unit?: string;
     categoryId?: string;  // For material master
@@ -77,6 +79,8 @@ export interface Customer {
     email?: string;
     gst?: string;
     address?: string;
+    billingAddress?: string;
+    shippingAddress?: string;
     bankDetails?: BankDetails;
 }
 
