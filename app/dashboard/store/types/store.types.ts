@@ -82,6 +82,7 @@ export interface Customer {
     billingAddress?: string;
     shippingAddress?: string;
     bankDetails?: BankDetails;
+    locationId?: string; // For Material form
 }
 
 export interface Location {
@@ -103,7 +104,9 @@ export interface Material {
     name: string;
     code?: string;
     categoryId: string | Category;  // Can be ID or populated Category object
+    locationId?: string | Location; // Can be ID or populated Location object
     category?: Category;  // Populated category data (alternative field)
+    location?: Location;  // Populated location data
 }
 
 // Inventory item interface

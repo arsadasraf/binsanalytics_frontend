@@ -28,7 +28,6 @@ export default function InventoryTable({ data }: InventoryTableProps) {
             <thead className="bg-gray-50 border-b border-gray-200">
                 <tr>
                     <th className="px-6 py-3 text-left font-semibold text-gray-900">Material</th>
-                    <th className="px-6 py-3 text-left font-semibold text-gray-900">Code</th>
                     <th className="px-6 py-3 text-left font-semibold text-gray-900">Stock</th>
                     <th className="px-6 py-3 text-left font-semibold text-gray-900">Unit</th>
                     <th className="px-6 py-3 text-left font-semibold text-gray-900">Category</th>
@@ -41,7 +40,6 @@ export default function InventoryTable({ data }: InventoryTableProps) {
                 {data.map((item) => (
                     <tr key={item._id} className="hover:bg-gray-50 transition-colors">
                         <td className="px-6 py-4 font-medium text-gray-900">{item.materialName}</td>
-                        <td className="px-6 py-4 text-gray-600">{item.materialCode}</td>
 
                         {/* Stock with color coding - red if below reorder level, green otherwise */}
                         <td

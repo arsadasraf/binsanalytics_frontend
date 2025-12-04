@@ -84,6 +84,11 @@ export default function MastersTable({ data, masterTab, onEdit, onDelete }: Mast
                                 <td className="px-6 py-4 text-gray-600">{item.supplierName}</td>
                                 <td className="px-6 py-4 text-gray-600">
                                     {item.items?.[0]?.materialName || '-'}
+                                    {item.items?.length > 1 && (
+                                        <span className="text-xs text-gray-500 ml-1">
+                                            (+{item.items.length - 1} more)
+                                        </span>
+                                    )}
                                 </td>
                                 <td className="px-6 py-4 text-gray-600">
                                     {item.items?.[0]?.quantity} {item.items?.[0]?.unit}
