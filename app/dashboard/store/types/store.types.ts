@@ -9,6 +9,14 @@ export type TabType = "home" | "material-issue" | "grn" | "dc" | "billing" | "po
 // Master data type for master tab navigation
 export type MasterType = "vendor" | "customer" | "location" | "category" | "material" | "grn-history";
 
+// Bank Details interface for vendors and customers
+export interface BankDetails {
+    accountNumber?: string;
+    ifscCode?: string;
+    bankName?: string;
+    branchName?: string;
+}
+
 // Item interface for transaction items (GRN, DC, PO, Billing)
 export interface Item {
     materialName: string;
@@ -33,6 +41,7 @@ export interface FormData {
     description?: string;
     unit?: string;
     categoryId?: string;  // For material master
+    bankDetails?: BankDetails;  // For vendor and customer
 
     // Transaction fields
     grnNumber?: string;
@@ -56,6 +65,7 @@ export interface Vendor {
     email?: string;
     gst?: string;
     address?: string;
+    bankDetails?: BankDetails;
 }
 
 export interface Customer {
@@ -67,6 +77,7 @@ export interface Customer {
     email?: string;
     gst?: string;
     address?: string;
+    bankDetails?: BankDetails;
 }
 
 export interface Location {

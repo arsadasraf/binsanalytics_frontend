@@ -94,6 +94,65 @@ export default function MasterForm({ formData, setFormData, masterTab, categorie
                         onChange={(e) => setFormData({ ...formData, address: e.target.value })}
                         className="input-field sm:col-span-2"
                     />
+
+                    {/* Bank Details Section */}
+                    <div className="sm:col-span-2 border-t pt-4 mt-2">
+                        <h4 className="text-sm font-semibold text-gray-700 mb-3">Bank Details</h4>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <input
+                                type="text"
+                                placeholder="Account Number"
+                                value={formData.bankDetails?.accountNumber || ""}
+                                onChange={(e) => setFormData({
+                                    ...formData,
+                                    bankDetails: {
+                                        ...formData.bankDetails,
+                                        accountNumber: e.target.value
+                                    }
+                                })}
+                                className="input-field"
+                            />
+                            <input
+                                type="text"
+                                placeholder="IFSC Code"
+                                value={formData.bankDetails?.ifscCode || ""}
+                                onChange={(e) => setFormData({
+                                    ...formData,
+                                    bankDetails: {
+                                        ...formData.bankDetails,
+                                        ifscCode: e.target.value
+                                    }
+                                })}
+                                className="input-field"
+                            />
+                            <input
+                                type="text"
+                                placeholder="Bank Name"
+                                value={formData.bankDetails?.bankName || ""}
+                                onChange={(e) => setFormData({
+                                    ...formData,
+                                    bankDetails: {
+                                        ...formData.bankDetails,
+                                        bankName: e.target.value
+                                    }
+                                })}
+                                className="input-field"
+                            />
+                            <input
+                                type="text"
+                                placeholder="Branch Name"
+                                value={formData.bankDetails?.branchName || ""}
+                                onChange={(e) => setFormData({
+                                    ...formData,
+                                    bankDetails: {
+                                        ...formData.bankDetails,
+                                        branchName: e.target.value
+                                    }
+                                })}
+                                className="input-field"
+                            />
+                        </div>
+                    </div>
                 </>
             )}
 
