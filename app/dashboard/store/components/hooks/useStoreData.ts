@@ -219,7 +219,14 @@ export function useStoreData(activeTab: TabType, masterTab: MasterType, token: s
      * Handles edit action - populates form with existing data
      */
     const handleEdit = (item: any) => {
-        setFormData({ ...item });
+        // For materials, handle populated categoryId
+        const editData = { ...item };
+        if (masterTab === "material" && item.categoryId && typeof item.categoryId === 'object') {
+            editData.categoryId = item.categoryId._id;
+            editData.unit = item.categoryId.unit;
+        }
+
+        setFormData(editData);
         setEditingId(item._id);
         setShowForm(true);
     };

@@ -90,9 +90,9 @@ export default function MastersTable({ data, masterTab, onEdit, onDelete }: Mast
                                 </td>
                                 <td className="px-6 py-4">
                                     <span className={`px-2 py-1 rounded-full text-xs font-medium ${item.status === 'Received' ? 'bg-green-100 text-green-800' :
-                                            item.status === 'Accepted' ? 'bg-blue-100 text-blue-800' :
-                                                item.status === 'Rejected' ? 'bg-red-100 text-red-800' :
-                                                    'bg-gray-100 text-gray-800'
+                                        item.status === 'Accepted' ? 'bg-blue-100 text-blue-800' :
+                                            item.status === 'Rejected' ? 'bg-red-100 text-red-800' :
+                                                'bg-gray-100 text-gray-800'
                                         }`}>
                                         {item.status}
                                     </span>
@@ -117,8 +117,8 @@ export default function MastersTable({ data, masterTab, onEdit, onDelete }: Mast
                                 {/* Conditional columns for material */}
                                 {masterTab === "material" && (
                                     <>
-                                        <td className="px-6 py-4 text-gray-600">{item.category?.name || '-'}</td>
-                                        <td className="px-6 py-4 text-gray-600">{item.category?.unit || '-'}</td>
+                                        <td className="px-6 py-4 text-gray-600">{item.categoryId?.name || item.category?.name || '-'}</td>
+                                        <td className="px-6 py-4 text-gray-600">{item.categoryId?.unit || item.category?.unit || '-'}</td>
                                     </>
                                 )}
                             </>

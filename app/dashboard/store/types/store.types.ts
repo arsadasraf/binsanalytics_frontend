@@ -102,8 +102,8 @@ export interface Material {
     _id: string;
     name: string;
     code?: string;
-    categoryId: string;
-    category?: Category;  // Populated category data
+    categoryId: string | Category;  // Can be ID or populated Category object
+    category?: Category;  // Populated category data (alternative field)
 }
 
 // Inventory item interface
@@ -114,10 +114,10 @@ export interface InventoryItem {
     currentStock: number;
     reorderLevel: number;
     unit: string;
-    locationId?: string;
-    categoryId?: string;
-    location?: Location;  // Populated location data
-    category?: Category;  // Populated category data
+    locationId?: string | Location;  // Can be ID or populated Location object
+    categoryId?: string | Category;  // Can be ID or populated Category object
+    location?: Location;  // Populated location data (alternative field)
+    category?: Category;  // Populated category data (alternative field)
 }
 
 // Transaction interfaces
@@ -140,13 +140,22 @@ export interface GRNFormData {
     _id?: string; // Added for edit mode
     grnNumber?: string;  // Auto-generated
     date: string;
+    supplier: string;
+    // Single material fields (backward compatibility)
     material: string;  // Material ID from master (not inventory)
     materialName?: string;
     quantity: number;
     unit?: string;  // Auto-filled from material's category
-    supplier: string;
     locationId: string;
     category?: string;  // Auto-filled from material's category
+    // Multiple materials support
+    items?: Array<{
+        material: string;
+        materialName: string;
+        quantity: number;
+        unit: string;
+        locationId: string;
+    }>;
 }
 
 // Props interfaces for components
