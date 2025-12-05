@@ -19,7 +19,7 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { apiGet, apiPost, apiPut, apiDelete } from "@/src/lib/api";
-import { TabType, MasterType, StoreFormData, Vendor, Customer, Location, Category, Material, GRNFormData, POFormData, CompanyInfo } from "../../types/store.types";
+import { TabType, MasterType, StoreFormData, Vendor, Customer, Location, Category, Material, GRNFormData, POFormData, CompanyInfo, DCFormData, BillingFormData } from "../../types/store.types";
 
 export function useStoreData(activeTab: TabType, masterTab: MasterType, token: string | null) {
     // ==================== State Management ====================
@@ -469,6 +469,96 @@ export function useStoreData(activeTab: TabType, masterTab: MasterType, token: s
         }
     };
 
+    /**
+     * Handles DC submission from modal
+     * @param dcData - DC form data from modal
+     */
+    const handleDCSubmit = async (dcData: DCFormData) => {
+        if (!token) return;
+
+        setLoading(true);
+        try {
+            await apiPost("/api/store/dc", dcData, token);
+            setSuccess("Delivery Challan created successfully");
+
+            // Refresh DC data
+            fetchData();
+        } catch (err: any) {
+            setError(err.message || "Failed to create Delivery Challan");
+            throw err;
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    /**
+     * Handles DC update from modal
+     * @param id - DC ID
+     * @param dcData - DC form data from modal
+     */
+    const handleDCUpdate = async (id: string, dcData: DCFormData) => {
+        if (!token) return;
+
+        setLoading(true);
+        try {
+            await apiPut(`/api/store/dc/${id}`, dcData, token);
+            setSuccess("Delivery Challan updated successfully");
+
+            // Refresh DC data
+            fetchData();
+        } catch (err: any) {
+            setError(err.message || "Failed to update Delivery Challan");
+            throw err;
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    /**
+     * Handles Billing/Invoice submission from modal
+     * @param billingData - Billing form data from modal
+     */
+    const handleBillingSubmit = async (billingData: BillingFormData) => {
+        if (!token) return;
+
+        setLoading(true);
+        try {
+            await apiPost("/api/store/invoice", billingData, token);
+            setSuccess("Invoice created successfully");
+
+            // Refresh Billing data
+            fetchData();
+        } catch (err: any) {
+            setError(err.message || "Failed to create Invoice");
+            throw err;
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    /**
+     * Handles Billing/Invoice update from modal
+     * @param id - Invoice ID
+     * @param billingData - Billing form data from modal
+     */
+    const handleBillingUpdate = async (id: string, billingData: BillingFormData) => {
+        if (!token) return;
+
+        setLoading(true);
+        try {
+            await apiPut(`/api/store/invoice/${id}`, billingData, token);
+            setSuccess("Invoice updated successfully");
+
+            // Refresh Billing data
+            fetchData();
+        } catch (err: any) {
+            setError(err.message || "Failed to update Invoice");
+            throw err;
+        } finally {
+            setLoading(false);
+        }
+    };
+
     // ==================== Return Hook Interface ====================
 
     return {
@@ -503,6 +593,10 @@ export function useStoreData(activeTab: TabType, masterTab: MasterType, token: s
         handleGRNUpdate,
         handlePOSubmit,
         handlePOUpdate,
+        handleDCSubmit,
+        handleDCUpdate,
+        handleBillingSubmit,
+        handleBillingUpdate,
         addItem,
         updateItem,
         removeItem,

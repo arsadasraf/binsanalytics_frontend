@@ -21,7 +21,7 @@ import SuccessAlert from "@/src/components/SuccessAlert";
 import * as XLSX from 'xlsx';
 
 // Import custom types
-import { TabType, MasterType, GRNFormData, POFormData } from "./types/store.types";
+import { TabType, MasterType, GRNFormData, POFormData, DCFormData, BillingFormData, BillsTabType } from "./types/store.types";
 
 // Import custom hook for business logic
 import { useStoreData } from "./components/hooks/useStoreData";
@@ -29,12 +29,15 @@ import { useStoreData } from "./components/hooks/useStoreData";
 // Import UI components
 import StoreHeader from "./components/StoreHeader";
 import MasterTabs from "./components/MasterTabs";
+import BillsTabs from "./components/BillsTabs";
 import SearchBar from "./components/SearchBar";
 import StoreForm from "./components/forms/StoreForm";
 import StoreTable from "./components/tables/StoreTable";
 import POTable from "./components/tables/POTable";
 import GRNModal from "./components/GRNModal";
 import POModal from "./components/POModal";
+import DCModal from "./components/DCModal";
+import BillingModal from "./components/BillingModal";
 import CompanyInfoForm from "./components/forms/CompanyInfoForm";
 
 /**
@@ -51,6 +54,9 @@ function StoreContent() {
   // State for master tab selection (vendor, customer, location, category)
   const [masterTab, setMasterTab] = useState<MasterType>("vendor");
 
+  // State for Bills tab selection
+  const [billsTab, setBillsTab] = useState<BillsTabType>("dc");
+
   // State for GRN modal
   const [showGRNModal, setShowGRNModal] = useState(false);
   const [editingGRN, setEditingGRN] = useState<GRNFormData | undefined>(undefined);
@@ -58,6 +64,14 @@ function StoreContent() {
   // State for PO modal
   const [showPOModal, setShowPOModal] = useState(false);
   const [editingPO, setEditingPO] = useState<POFormData | undefined>(undefined);
+
+  // State for DC modal
+  const [showDCModal, setShowDCModal] = useState(false);
+  const [editingDC, setEditingDC] = useState<DCFormData | undefined>(undefined);
+
+  // State for Billing modal
+  const [showBillingModal, setShowBillingModal] = useState(false);
+  const [editingBilling, setEditingBilling] = useState<BillingFormData | undefined>(undefined);
 
   // Get authentication token from localStorage
   const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
@@ -90,6 +104,10 @@ function StoreContent() {
     handleGRNUpdate,
     handlePOSubmit,
     handlePOUpdate,
+    handleDCSubmit,
+    handleDCUpdate,
+    handleBillingSubmit,
+    handleBillingUpdate,
     addItem,
     updateItem,
     removeItem,
@@ -128,6 +146,40 @@ function StoreContent() {
       }
       setShowPOModal(false);
       setEditingPO(undefined);
+    } catch (err) {
+      // Error is already handled in hook
+    }
+  };
+
+  /**
+   * Handles DC creation/update from modal
+   */
+  const onDCSubmit = async (dcData: DCFormData) => {
+    try {
+      if (editingDC && editingDC._id) {
+        await handleDCUpdate(editingDC._id, dcData);
+      } else {
+        await handleDCSubmit(dcData);
+      }
+      setShowDCModal(false);
+      setEditingDC(undefined);
+    } catch (err) {
+      // Error is already handled in hook
+    }
+  };
+
+  /**
+   * Handles Billing/Invoice creation/update from modal
+   */
+  const onBillingSubmit = async (billingData: BillingFormData) => {
+    try {
+      if (editingBilling && editingBilling._id) {
+        await handleBillingUpdate(editingBilling._id, billingData);
+      } else {
+        await handleBillingSubmit(billingData);
+      }
+      setShowBillingModal(false);
+      setEditingBilling(undefined);
     } catch (err) {
       // Error is already handled in hook
     }
@@ -179,6 +231,33 @@ function StoreContent() {
     };
     setEditingPO(poData);
     setShowPOModal(true);
+  };
+
+  /**
+   * Handles DC edit action
+   */
+  const handleDCEdit = (item: any) => {
+    const dcData: DCFormData = {
+      ...item,
+      items: item.items || [],
+    };
+    setEditingDC(dcData);
+    setShowDCModal(true);
+  };
+
+  /**
+   * Handles Billing edit action
+   */
+  const handleBillingEdit = (item: any) => {
+    const billingData: BillingFormData = {
+      ...item,
+      items: item.items || [],
+      subtotal: Number(item.subtotal) || 0,
+      taxAmount: Number(item.taxAmount) || 0,
+      totalAmount: Number(item.totalAmount) || 0,
+    };
+    setEditingBilling(billingData);
+    setShowBillingModal(true);
   };
 
   /**
@@ -282,6 +361,13 @@ function StoreContent() {
           </div>
         )}
 
+        {/* Bills tabs - shown when po, dc, or billing tabs are active */}
+        {(activeTab === "po" || activeTab === "dc" || activeTab === "billing") && (
+          <div className="mb-6">
+            <BillsTabs billsTab={billsTab} setBillsTab={setBillsTab} />
+          </div>
+        )}
+
         {/* Search bar for filtering data */}
         <SearchBar searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
 
@@ -331,7 +417,9 @@ function StoreContent() {
           </div>
         )}
 
-        {/* Create PO button - only shown in PO tab */}
+        {/* Create buttons for Bills Section */}
+
+        {/* Create PO button */}
         {activeTab === "po" && (
           <div className="mb-6">
             <button
@@ -345,6 +433,42 @@ function StoreContent() {
                 <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" />
               </svg>
               Create Purchase Order
+            </button>
+          </div>
+        )}
+
+        {/* Create DC button */}
+        {activeTab === "dc" && (
+          <div className="mb-6">
+            <button
+              onClick={() => {
+                setEditingDC(undefined);
+                setShowDCModal(true);
+              }}
+              className="px-6 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors flex items-center gap-2"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" />
+              </svg>
+              Create Delivery Challan
+            </button>
+          </div>
+        )}
+
+        {/* Create Invoice button */}
+        {activeTab === "billing" && (
+          <div className="mb-6">
+            <button
+              onClick={() => {
+                setEditingBilling(undefined);
+                setShowBillingModal(true);
+              }}
+              className="px-6 py-3 bg-indigo-600 text-white rounded-lg font-semibold hover:bg-indigo-700 transition-colors flex items-center gap-2"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" />
+              </svg>
+              Create Invoice
             </button>
           </div>
         )}
@@ -389,7 +513,11 @@ function StoreContent() {
             masterTab={masterTab}
             data={data}
             loading={loading}
-            onEdit={handleMasterEdit}
+            onEdit={
+              activeTab === "dc" ? handleDCEdit :
+                activeTab === "billing" ? handleBillingEdit :
+                  handleMasterEdit
+            }
             onDelete={handleDelete}
           />
         )}
@@ -424,6 +552,34 @@ function StoreContent() {
           loading={loading}
           initialData={editingPO}
           isEditing={!!editingPO}
+        />
+
+        {/* DC Modal */}
+        <DCModal
+          isOpen={showDCModal}
+          onClose={() => {
+            setShowDCModal(false);
+            setEditingDC(undefined);
+          }}
+          onSubmit={onDCSubmit}
+          customers={customers}
+          loading={loading}
+          initialData={editingDC}
+          isEditing={!!editingDC}
+        />
+
+        {/* Billing Modal */}
+        <BillingModal
+          isOpen={showBillingModal}
+          onClose={() => {
+            setShowBillingModal(false);
+            setEditingBilling(undefined);
+          }}
+          onSubmit={onBillingSubmit}
+          customers={customers}
+          loading={loading}
+          initialData={editingBilling}
+          isEditing={!!editingBilling}
         />
       </div>
 

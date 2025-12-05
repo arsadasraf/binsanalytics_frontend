@@ -4,7 +4,7 @@
  */
 
 // Tab type for main navigation
-export type TabType = "home" | "material-issue" | "grn" | "dc" | "billing" | "po" | "masters";
+export type TabType = "home" | "material-issue" | "grn" | "dc" | "billing" | "po" | "masters" | "bills-dc" | "bills-billing" | "bills-po";
 
 // Master data type for master tab navigation
 export type MasterType = "vendor" | "customer" | "location" | "category" | "material" | "grn-history" | "company-info";
@@ -202,6 +202,45 @@ export interface POFormData {
     totalAmount?: number;  // Total of all items
 }
 
+// DC Form Data
+export interface DCFormData {
+    _id?: string;
+    dcNumber?: string;  // Auto-generated
+    date: string;
+    customerName: string;
+    customerAddress?: string;
+    items: Array<{
+        materialName: string;
+        quantity: number;
+        unit: string;
+        description?: string;
+    }>;
+    status?: "Draft" | "Issued" | "Delivered";
+}
+
+// Billing/Invoice Form Data  
+export interface BillingFormData {
+    _id?: string;
+    invoiceNumber?: string;  // Auto-generated
+    date: string;
+    customerName: string;
+    customerAddress?: string;
+    customerGST?: string;
+    items: Array<{
+        materialName: string;
+        quantity: number;
+        unit: string;
+        rate: number;
+        amount: number;
+        taxRate?: number;
+        taxAmount?: number;
+    }>;
+    subtotal: number;
+    taxAmount?: number;
+    totalAmount: number;
+    status?: "Draft" | "Sent" | "Paid";
+}
+
 // Props interfaces for components
 export interface StoreHeaderProps {
     // No props needed - static content
@@ -292,3 +331,28 @@ export interface POModalProps {
     initialData?: POFormData;
     isEditing?: boolean;
 }
+
+// DC Modal Props
+export interface DCModalProps {
+    isOpen: boolean;
+    onClose: () => void;
+    onSubmit: (data: DCFormData) => void;
+    customers: Customer[];
+    loading: boolean;
+    initialData?: DCFormData;
+    isEditing?: boolean;
+}
+
+// Billing Modal Props
+export interface BillingModalProps {
+    isOpen: boolean;
+    onClose: () => void;
+    onSubmit: (data: BillingFormData) => void;
+    customers: Customer[];
+    loading: boolean;
+    initialData?: BillingFormData;
+    isEditing?: boolean;
+}
+
+// Bills Tab Type
+export type BillsTabType = "dc" | "billing" | "po";

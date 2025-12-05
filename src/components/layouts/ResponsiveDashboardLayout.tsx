@@ -36,12 +36,18 @@ type NavItem = {
 };
 
 const storeSubItems: NavItem[] = [
-  { href: "/dashboard/store?tab=home", label: "Stock (Home)", icon: Home },
+  { href: "/dashboard/store?tab=home", label: "Home", icon: Home },
   { href: "/dashboard/store?tab=material-issue", label: "Material Issue", icon: PackageMinus },
-  { href: "/dashboard/store?tab=grn", label: "GRN", icon: PackagePlus },
-  { href: "/dashboard/store?tab=dc", label: "Delivery Challan", icon: Truck },
-  { href: "/dashboard/store?tab=billing", label: "Billing", icon: Receipt },
-  { href: "/dashboard/store?tab=po", label: "PO Release", icon: ShoppingCart },
+  {
+    href: "/dashboard/store?tab=po",
+    label: "Bills",
+    icon: Receipt,
+    subItems: [
+      { href: "/dashboard/store?tab=po", label: "PO Release", icon: ShoppingCart },
+      { href: "/dashboard/store?tab=billing", label: "Billing", icon: Wallet },
+      { href: "/dashboard/store?tab=dc", label: "Delivery Challan", icon: Truck },
+    ]
+  },
   { href: "/dashboard/store?tab=masters", label: "Masters", icon: Database },
 ];
 
@@ -165,8 +171,12 @@ export default function ResponsiveDashboardLayout({ children }: { children: Reac
   // Mobile Bottom Nav Logic
   const mobileBottomNavItems = useMemo(() => {
     if (isStoreModule) {
-      // For Store: Home, Material Issue, GRN, Billing (First 4)
-      return storeSubItems.slice(0, 4);
+      // For Store: Home, Material Issue, Bills
+      return [
+        storeSubItems[0], // Home
+        storeSubItems[1], // Material Issue  
+        storeSubItems[2], // Bills (parent with sub-items)
+      ];
     }
     if (isPPCModule) {
       // For PPC: Home, PO List, Create PO, Create Work Order (First 4)
@@ -178,8 +188,8 @@ export default function ResponsiveDashboardLayout({ children }: { children: Reac
 
   const mobileOverflowItems = useMemo(() => {
     if (isStoreModule) {
-      // Remaining Store items
-      return storeSubItems.slice(4);
+      // Remaining Store items: Masters only
+      return [storeSubItems[3]]; // Masters
     }
     if (isPPCModule) {
       // Remaining PPC items
