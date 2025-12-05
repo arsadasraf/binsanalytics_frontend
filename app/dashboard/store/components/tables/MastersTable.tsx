@@ -63,6 +63,7 @@ export default function MastersTable({ data, masterTab, onEdit, onDelete }: Mast
                         <>
                             <th className="px-6 py-3 text-left font-semibold text-gray-900">Category</th>
                             <th className="px-6 py-3 text-left font-semibold text-gray-900">Unit</th>
+                            <th className="px-6 py-3 text-left font-semibold text-gray-900">Location</th>
                         </>
                     )}
 
@@ -124,6 +125,7 @@ export default function MastersTable({ data, masterTab, onEdit, onDelete }: Mast
                                     <>
                                         <td className="px-6 py-4 text-gray-600">{item.categoryId?.name || item.category?.name || '-'}</td>
                                         <td className="px-6 py-4 text-gray-600">{item.categoryId?.unit || item.category?.unit || '-'}</td>
+                                        <td className="px-6 py-4 text-gray-600">{item.locationId?.name || item.location?.name || '-'}</td>
                                     </>
                                 )}
                             </>

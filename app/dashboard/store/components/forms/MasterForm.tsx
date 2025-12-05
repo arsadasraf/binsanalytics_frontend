@@ -15,16 +15,17 @@
  */
 
 import React from 'react';
-import { FormData, MasterType, Category } from '../../types/store.types';
+import { FormData, MasterType, Category, Location } from '../../types/store.types';
 
 interface MasterFormProps {
     formData: FormData;
     setFormData: (data: FormData) => void;
     masterTab: MasterType;
     categories?: Category[];
+    locations?: Location[];
 }
 
-export default function MasterForm({ formData, setFormData, masterTab, categories = [] }: MasterFormProps) {
+export default function MasterForm({ formData, setFormData, masterTab, categories = [], locations = [] }: MasterFormProps) {
     /**
      * Handles category selection for material
      * Auto-fills unit from selected category
@@ -213,6 +214,22 @@ export default function MasterForm({ formData, setFormData, masterTab, categorie
                             {categories.map((category) => (
                                 <option key={category._id} value={category._id}>
                                     {category.name}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+
+                    {/* Location dropdown */}
+                    <div>
+                        <select
+                            value={formData.locationId || ""}
+                            onChange={(e) => setFormData({ ...formData, locationId: e.target.value })}
+                            className="input-field"
+                        >
+                            <option value="">Select Location</option>
+                            {locations.map((location) => (
+                                <option key={location._id} value={location._id}>
+                                    {location.name}
                                 </option>
                             ))}
                         </select>

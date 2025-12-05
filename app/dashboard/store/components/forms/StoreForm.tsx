@@ -22,7 +22,7 @@
  */
 
 import React from 'react';
-import { TabType, MasterType, FormData, Vendor, Customer, Category } from '../../types/store.types';
+import { TabType, MasterType, FormData, Vendor, Customer, Category, Location } from '../../types/store.types';
 import MasterForm from './MasterForm';
 import GRNForm from './GRNForm';
 import DCForm from './DCForm';
@@ -42,6 +42,7 @@ interface StoreFormProps {
     vendors: Vendor[];
     customers: Customer[];
     categories: Category[];
+    locations: Location[];
     onSubmit: (e: React.FormEvent) => void;
     onCancel: () => void;
     addItem: () => void;
@@ -60,6 +61,7 @@ export default function StoreForm({
     vendors,
     customers,
     categories,
+    locations,
     onSubmit,
     onCancel,
     addItem,
@@ -76,7 +78,13 @@ export default function StoreForm({
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     {/* Render appropriate form based on active tab */}
                     {activeTab === "masters" && (
-                        <MasterForm formData={formData} setFormData={setFormData} masterTab={masterTab} categories={categories} />
+                        <MasterForm
+                            formData={formData}
+                            setFormData={setFormData}
+                            masterTab={masterTab}
+                            categories={categories}
+                            locations={locations}
+                        />
                     )}
 
                     {activeTab === "grn" && (

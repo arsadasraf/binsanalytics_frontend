@@ -42,6 +42,11 @@ export function useStoreData(activeTab: TabType, masterTab: MasterType, token: s
     const [categories, setCategories] = useState<Category[]>([]);
     const [materials, setMaterials] = useState<Material[]>([]);
 
+    // Filter state
+    const [startDate, setStartDate] = useState("");
+    const [endDate, setEndDate] = useState("");
+    const [filterSupplier, setFilterSupplier] = useState("");
+
     // ==================== Data Fetching ====================
 
     /**
@@ -133,11 +138,32 @@ export function useStoreData(activeTab: TabType, masterTab: MasterType, token: s
     // ==================== Search Filtering ====================
 
     /**
-     * Filters data based on search term
+     * Filters data based on search term and specific filters
      * Searches across different fields depending on the active tab
      */
     const filteredData = useMemo(() => {
         return data.filter((item) => {
+            // GRN History Filtering
+            if (activeTab === "masters" && masterTab === "grn-history") {
+                // Date Filter
+                if (startDate) {
+                    const itemDate = new Date(item.date).setHours(0, 0, 0, 0);
+                    const start = new Date(startDate).setHours(0, 0, 0, 0);
+                    if (itemDate < start) return false;
+                }
+                if (endDate) {
+                    const itemDate = new Date(item.date).setHours(0, 0, 0, 0);
+                    const end = new Date(endDate).setHours(0, 0, 0, 0);
+                    if (itemDate > end) return false;
+                }
+
+                // Supplier Filter
+                if (filterSupplier) {
+                    const itemSupplierId = item.supplier?._id || item.supplier;
+                    if (itemSupplierId !== filterSupplier) return false;
+                }
+            }
+
             const searchLower = searchTerm.toLowerCase();
 
             if (activeTab === "masters") {
@@ -146,7 +172,9 @@ export function useStoreData(activeTab: TabType, masterTab: MasterType, token: s
                     (item.name?.toLowerCase().includes(searchLower) || false) ||
                     (item.code?.toLowerCase().includes(searchLower) || false) ||
                     (item.contactPerson?.toLowerCase().includes(searchLower) || false) ||
-                    (item.email?.toLowerCase().includes(searchLower) || false)
+                    (item.email?.toLowerCase().includes(searchLower) || false) ||
+                    (item.grnNumber?.toLowerCase().includes(searchLower) || false) || // GRN Number
+                    (item.supplierName?.toLowerCase().includes(searchLower) || false) // Supplier Name
                 );
             }
 
@@ -157,7 +185,7 @@ export function useStoreData(activeTab: TabType, masterTab: MasterType, token: s
                 (item.code?.toLowerCase().includes(searchLower) || false)
             );
         });
-    }, [data, searchTerm, activeTab]);
+    }, [data, searchTerm, activeTab, masterTab, startDate, endDate, filterSupplier]);
 
     // ==================== CRUD Operations ====================
 
