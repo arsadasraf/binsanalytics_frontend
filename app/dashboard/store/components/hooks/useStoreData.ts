@@ -178,20 +178,20 @@ export function useStoreData(activeTab: TabType, masterTab: MasterType, token: s
      */
     const filteredData = useMemo(() => {
         return data.filter((item) => {
-            // GRN History Filtering
-            if (activeTab === "masters" && masterTab === "grn-history") {
-                // Date Filter
-                if (startDate) {
-                    const itemDate = new Date(item.date).setHours(0, 0, 0, 0);
-                    const start = new Date(startDate).setHours(0, 0, 0, 0);
-                    if (itemDate < start) return false;
-                }
-                if (endDate) {
-                    const itemDate = new Date(item.date).setHours(0, 0, 0, 0);
-                    const end = new Date(endDate).setHours(0, 0, 0, 0);
-                    if (itemDate > end) return false;
-                }
+            // Date Filter (Applies to all transactions with a date field)
+            if (startDate) {
+                const itemDate = new Date(item.date).setHours(0, 0, 0, 0);
+                const start = new Date(startDate).setHours(0, 0, 0, 0);
+                if (itemDate < start) return false;
+            }
+            if (endDate) {
+                const itemDate = new Date(item.date).setHours(0, 0, 0, 0);
+                const end = new Date(endDate).setHours(0, 0, 0, 0);
+                if (itemDate > end) return false;
+            }
 
+            // GRN History Specific Filtering
+            if (activeTab === "masters" && masterTab === "grn-history") {
                 // Supplier Filter
                 if (filterSupplier) {
                     const itemSupplierId = item.supplier?._id || item.supplier;
@@ -612,5 +612,9 @@ export function useStoreData(activeTab: TabType, masterTab: MasterType, token: s
         removeItem,
         companyInfo,
         saveCompanyInfo,
+        startDate,
+        endDate,
+        setStartDate,
+        setEndDate,
     };
 }

@@ -5,10 +5,11 @@
  */
 
 import React from 'react';
-import { Edit2, Trash2, Download, Truck } from 'lucide-react'; // Truck icon for E-way Bill
+import { Edit2, Trash2, Download, Truck, FileText } from 'lucide-react'; // Truck icon for E-way Bill
 import { CompanyInfo } from '../../types/store.types';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import * as XLSX from 'xlsx';
 
 interface DCTableProps {
     data: any[];
@@ -25,31 +26,65 @@ const generateEWayBill = (dc: any) => {
 const downloadDCAsPDF = (dc: any, companyInfo?: CompanyInfo) => {
     try {
         const doc = new jsPDF();
+        const pageWidth = doc.internal.pageSize.width;
 
-        // Header
-        doc.setFontSize(22);
-        doc.setTextColor(37, 99, 235); // Blue
-        doc.text(companyInfo?.companyName || 'Company Name', 20, 20);
+        // --- Header Section ---
+        // Logo (Left)
+        if (companyInfo?.logo) {
+            try {
+                doc.addImage(companyInfo.logo, 'JPEG', 15, 10, 25, 25);
+            } catch (e) {
+                console.warn("Logo add failed", e);
+            }
+        }
 
-        doc.setFontSize(10);
+        // Company Details (Left, below logo or next to it if preferred. Let's stack below logo for sidebar feel or center?)
+        // Modern Style: Company Top Left, DC Details Top Right.
+        doc.setFontSize(14);
+        doc.setFont('helvetica', 'bold');
+        doc.setTextColor(30, 41, 59); // Slate 800
+        doc.text(companyInfo?.companyName || 'Company Name', 15, 40);
+
+        doc.setFontSize(9);
+        doc.setFont('helvetica', 'normal');
         doc.setTextColor(100);
-        doc.text(companyInfo?.billingAddress || '', 20, 30);
+        doc.text(companyInfo?.billingAddress || '', 15, 46, { maxWidth: 80 });
+        if (companyInfo?.gstNumber) doc.text(`GSTIN: ${companyInfo.gstNumber}`, 15, 58);
+        if (companyInfo?.contactNumber) doc.text(`Phone: ${companyInfo.contactNumber}`, 15, 63);
 
-        // Title
-        doc.setFontSize(16);
-        doc.setTextColor(0);
-        doc.text('DELIVERY CHALLAN', 105, 50, { align: 'center' } as any);
+        // --- DC Title & Info (Right) ---
+        doc.setFontSize(24);
+        doc.setTextColor(37, 99, 235); // Blue 600
+        doc.setFont('helvetica', 'bold');
+        doc.text('DELIVERY CHALLAN', pageWidth - 15, 25, { align: 'right' });
 
-        // DC Details
         doc.setFontSize(10);
-        doc.text(`DC Number: ${dc.dcNumber}`, 20, 65);
-        doc.text(`Date: ${new Date(dc.date).toLocaleDateString()}`, 20, 70);
-        doc.text(`Status: ${dc.status}`, 20, 75);
+        doc.setTextColor(71, 85, 105); // Slate 600
+        doc.setFont('helvetica', 'normal');
+        doc.text(`DC No: ${dc.dcNumber}`, pageWidth - 15, 35, { align: 'right' });
+        doc.text(`Date: ${new Date(dc.date).toLocaleDateString()}`, pageWidth - 15, 40, { align: 'right' });
+        doc.text(`Status: ${dc.status}`, pageWidth - 15, 45, { align: 'right' });
 
-        doc.text(`Customer:`, 140, 65);
-        doc.text(`${dc.customerName}`, 140, 70);
+        // --- Customer Details (Right, below DC Info) ---
+        doc.setFontSize(11);
+        doc.setFont('helvetica', 'bold');
+        doc.setTextColor(30, 41, 59);
+        doc.text("Ship To:", pageWidth - 15, 55, { align: 'right' });
 
-        // Table
+        doc.setFontSize(10);
+        doc.setFont('helvetica', 'normal');
+        doc.setTextColor(0);
+        // Check if customer is object or just ID/Name
+        const custName = typeof dc.customer === 'object' ? dc.customer.name : dc.customerName;
+        const custAddress = typeof dc.customer === 'object' ? dc.customer.address : '';
+        const custGST = typeof dc.customer === 'object' ? dc.customer.gstNumber : '';
+
+        doc.text(custName || 'N/A', pageWidth - 15, 60, { align: 'right' });
+        if (custAddress) doc.text(custAddress, pageWidth - 15, 65, { align: 'right', maxWidth: 80 });
+        // Adjust Y based on address lines? distinct vertical space prevents overlap but simple here.
+        if (custGST) doc.text(`GSTIN: ${custGST}`, pageWidth - 15, 80, { align: 'right' });
+
+        // --- Item Table ---
         const tableData = dc.items.map((item: any) => [
             item.materialName,
             item.hsnCode || '-',
@@ -59,23 +94,103 @@ const downloadDCAsPDF = (dc: any, companyInfo?: CompanyInfo) => {
         ]);
 
         autoTable(doc, {
-            startY: 85,
+            startY: 90,
             head: [['Material', 'HSN', 'Qty', 'Unit', 'Description']],
             body: tableData,
-            theme: 'grid',
-            headStyles: { fillColor: [37, 99, 235] },
+            theme: 'striped',
+            headStyles: {
+                fillColor: [30, 41, 59], // Dark Slate
+                fontSize: 10,
+                fontStyle: 'bold'
+            },
+            styles: {
+                fontSize: 9,
+                cellPadding: 4,
+            },
+            alternateRowStyles: {
+                fillColor: [241, 245, 249] // Slate 50
+            }
         });
 
-        // Footer
+        // --- Footer ---
+        const finalY = (doc as any).lastAutoTable?.finalY || 100;
+
         if (dc.otherDetails) {
-            const finalY = (doc as any).lastAutoTable?.finalY || 100;
-            doc.text('Remarks:', 20, finalY + 10);
-            doc.text(dc.otherDetails, 20, finalY + 15);
+            doc.setFontSize(10);
+            doc.setFont('helvetica', 'bold');
+            doc.text('Remarks:', 15, finalY + 10);
+            doc.setFont('helvetica', 'normal');
+            doc.text(dc.otherDetails, 15, finalY + 16, { maxWidth: pageWidth - 30 });
         }
+
+        // Signatory
+        doc.setFontSize(10);
+        doc.setFont('helvetica', 'bold');
+        doc.text("Authorized Signatory", pageWidth - 15, finalY + 40, { align: 'right' });
 
         doc.save(`DC_${dc.dcNumber}.pdf`);
     } catch (error) {
         console.error("PDF Error", error);
+    }
+};
+
+const downloadSingleDCExcel = (dc: any, companyInfo?: CompanyInfo) => {
+    try {
+        // Prepare Header Info
+        const custName = typeof dc.customer === 'object' ? dc.customer.name : dc.customerName;
+        const custAddress = typeof dc.customer === 'object' ? dc.customer.address : '';
+        const custGST = typeof dc.customer === 'object' ? dc.customer.gstNumber : '';
+
+        const workbook = XLSX.utils.book_new();
+
+        // We will build a customized array of arrays for the sheet to handle the header structure
+        const sheetData = [
+            // Company Info
+            [companyInfo?.companyName || ''],
+            [companyInfo?.billingAddress || ''],
+            [`GSTIN: ${companyInfo?.gstNumber || ''}`],
+            [],
+            // DC Info
+            ['DELIVERY CHALLAN'],
+            ['DC Number', dc.dcNumber],
+            ['Date', new Date(dc.date).toLocaleDateString()],
+            ['Status', dc.status],
+            [],
+            // Customer Info
+            ['Ship To:'],
+            ['Name', custName],
+            ['Address', custAddress],
+            ['GSTIN', custGST],
+            [],
+            // Items Header
+            ['Material', 'HSN Code', 'Quantity', 'Unit', 'Description'],
+        ];
+
+        // Add Items
+        dc.items.forEach((item: any) => {
+            sheetData.push([
+                item.materialName,
+                item.hsnCode || '-',
+                item.quantity,
+                item.unit,
+                item.description || '-'
+            ]);
+        });
+
+        if (dc.otherDetails) {
+            sheetData.push([]);
+            sheetData.push(['Remarks:', dc.otherDetails]);
+        }
+
+        const worksheet = XLSX.utils.aoa_to_sheet(sheetData);
+
+        // Optional: formatting column widths
+        worksheet['!cols'] = [{ wch: 25 }, { wch: 15 }, { wch: 10 }, { wch: 10 }, { wch: 30 }];
+
+        XLSX.utils.book_append_sheet(workbook, worksheet, 'DC Details');
+        XLSX.writeFile(workbook, `DC_${dc.dcNumber}.xlsx`);
+    } catch (err) {
+        console.error("Excel Error", err);
     }
 };
 
@@ -114,7 +229,7 @@ export default function DCTable({ data, companyInfo, onEdit, onDelete }: DCTable
                             </td>
                             <td className="px-6 py-4">
                                 <span className={`px-2 py-1 rounded-full text-xs font-medium ${item.status === 'Delivered' ? 'bg-green-100 text-green-800' :
-                                        item.status === 'Issued' ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-800'
+                                    item.status === 'Issued' ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-800'
                                     }`}>
                                     {item.status}
                                 </span>
@@ -127,6 +242,13 @@ export default function DCTable({ data, companyInfo, onEdit, onDelete }: DCTable
                                         title="Generate E-Way Bill"
                                     >
                                         <Truck size={16} />
+                                    </button>
+                                    <button
+                                        onClick={() => downloadSingleDCExcel(item, companyInfo)}
+                                        className="p-2 text-green-600 hover:bg-green-50 rounded-lg transition-colors"
+                                        title="Download Excel"
+                                    >
+                                        <FileText size={16} />
                                     </button>
                                     <button
                                         onClick={() => downloadDCAsPDF(item, companyInfo)}

@@ -5,10 +5,11 @@
  */
 
 import React from 'react';
-import { Edit2, Trash2, Download, Truck } from 'lucide-react';
+import { Edit2, Trash2, Download, Truck, FileText } from 'lucide-react';
 import { CompanyInfo } from '../../types/store.types';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import * as XLSX from 'xlsx';
 
 interface BillingTableProps {
     data: any[];
@@ -26,75 +27,61 @@ const downloadInvoiceAsPDF = (invoice: any, companyInfo?: CompanyInfo) => {
         const doc = new jsPDF();
         const pageWidth = doc.internal.pageSize.width;
 
-        // Logo
+        // --- Header Section ---
+        // Logo (Left)
         if (companyInfo?.logo) {
             try {
-                // Attempt to add logo if it's a valid image URL/Base64
-                // Note: Remote URLs might fail due to CORS if not proxied/configured
-                doc.addImage(companyInfo.logo, 'JPEG', 20, 10, 30, 30);
+                doc.addImage(companyInfo.logo, 'JPEG', 15, 10, 25, 25);
             } catch (e) {
-                console.warn("Could not add logo to PDF", e);
+                console.warn("Logo add failed", e);
             }
         }
 
-        // Company Header (Right Aligned or Centered if no logo?)
-        // Let's keep Standard Format: Left Logo, Right Company Details or Stacked
-
-        // Company Name & Address (Left aligned below logo or right aligned?)
-        // Standard: Logo Top Left, Company Name Top Right or Center.
-        // Let's put Company Details on the Right for balance.
-
-        doc.setFontSize(20);
-        doc.setTextColor(79, 70, 229); // Indigo
+        // Company Details (Left)
+        doc.setFontSize(14);
         doc.setFont('helvetica', 'bold');
-        doc.text(companyInfo?.companyName || 'Company Name', pageWidth - 20, 20, { align: 'right' });
+        doc.setTextColor(30, 41, 59); // Slate 800
+        doc.text(companyInfo?.companyName || 'Company Name', 15, 40);
 
-        doc.setFontSize(10);
+        doc.setFontSize(9);
+        doc.setFont('helvetica', 'normal');
         doc.setTextColor(100);
-        doc.setFont('helvetica', 'normal');
-        doc.text(companyInfo?.billingAddress || '', pageWidth - 20, 30, { align: 'right', maxWidth: 80 });
-        if (companyInfo?.gstNumber) {
-            doc.text(`GSTIN: ${companyInfo.gstNumber}`, pageWidth - 20, 45, { align: 'right' });
-        }
-        if (companyInfo?.contactNumber) {
-            doc.text(`Phone: ${companyInfo.contactNumber}`, pageWidth - 20, 50, { align: 'right' });
-        }
+        doc.text(companyInfo?.billingAddress || '', 15, 46, { maxWidth: 80 });
+        if (companyInfo?.gstNumber) doc.text(`GSTIN: ${companyInfo.gstNumber}`, 15, 58);
+        if (companyInfo?.contactNumber) doc.text(`Phone: ${companyInfo.contactNumber}`, 15, 63);
 
-        // Title
-        doc.setFontSize(18);
-        doc.setTextColor(0);
+        // --- Invoice Title & Info (Right) ---
+        doc.setFontSize(24);
+        doc.setTextColor(79, 70, 229); // Indigo 600
         doc.setFont('helvetica', 'bold');
-        doc.text('TAX INVOICE', 20, 60);
+        doc.text('TAX INVOICE', pageWidth - 15, 25, { align: 'right' });
 
-        // Divider
-        doc.setDrawColor(200);
-        doc.line(20, 65, pageWidth - 20, 65);
-
-        // Invoice & Customer Details
         doc.setFontSize(10);
+        doc.setTextColor(71, 85, 105); // Slate 600
+        doc.setFont('helvetica', 'normal');
+        doc.text(`Invoice No: ${invoice.invoiceNumber}`, pageWidth - 15, 35, { align: 'right' });
+        doc.text(`Date: ${new Date(invoice.date).toLocaleDateString()}`, pageWidth - 15, 40, { align: 'right' });
+        doc.text(`Status: ${invoice.status}`, pageWidth - 15, 45, { align: 'right' });
+
+        // --- Customer Details (Right, below Info) ---
+        doc.setFontSize(11);
+        doc.setFont('helvetica', 'bold');
+        doc.setTextColor(30, 41, 59);
+        doc.text("Bill To:", pageWidth - 15, 55, { align: 'right' });
+
+        doc.setFontSize(10);
+        doc.setFont('helvetica', 'normal');
         doc.setTextColor(0);
 
-        // Left Column: Invoice Details
-        doc.setFont('helvetica', 'bold');
-        doc.text('Invoice Details:', 20, 75);
-        doc.setFont('helvetica', 'normal');
-        doc.text(`Invoice No: ${invoice.invoiceNumber}`, 20, 82);
-        doc.text(`Date: ${new Date(invoice.date).toLocaleDateString()}`, 20, 87);
-        doc.text(`Status: ${invoice.status}`, 20, 92);
+        const custName = typeof invoice.customer === 'object' ? invoice.customer.name : invoice.customerName;
+        const custAddress = typeof invoice.customer === 'object' ? invoice.customer.address : (invoice.customerAddress || '');
+        const custGST = typeof invoice.customer === 'object' ? invoice.customer.gstNumber : (invoice.customerGST || '');
 
-        // Right Column: Bill To
-        doc.setFont('helvetica', 'bold');
-        doc.text('Bill To:', 120, 75);
-        doc.setFont('helvetica', 'normal');
-        doc.text(invoice.customerName, 120, 82);
-        if (invoice.customerAddress) {
-            doc.text(invoice.customerAddress, 120, 87, { maxWidth: 70 });
-        }
-        if (invoice.customerGST) {
-            doc.text(`GSTIN: ${invoice.customerGST}`, 120, 105); // Adjust Y based on address length usually, but hardcoded for now
-        }
+        doc.text(custName || 'N/A', pageWidth - 15, 60, { align: 'right' });
+        if (custAddress) doc.text(custAddress, pageWidth - 15, 65, { align: 'right', maxWidth: 80 });
+        if (custGST) doc.text(`GSTIN: ${custGST}`, pageWidth - 15, 80, { align: 'right' }); // Approx Y based on address
 
-        // Table
+        // --- Item Table ---
         const tableData = invoice.items.map((item: any) => [
             item.materialName,
             item.hsnCode || '-',
@@ -105,73 +92,148 @@ const downloadInvoiceAsPDF = (invoice: any, companyInfo?: CompanyInfo) => {
         ]);
 
         autoTable(doc, {
-            startY: 115,
+            startY: 90,
             head: [['Item', 'HSN', 'Qty', 'Rate', 'Tax', 'Amount']],
             body: tableData,
-            theme: 'grid',
-            headStyles: { fillColor: [79, 70, 229] },
-            styles: { fontSize: 9, cellPadding: 3 },
+            theme: 'striped',
+            headStyles: {
+                fillColor: [79, 70, 229], // Indigo 600
+                fontSize: 10,
+                fontStyle: 'bold'
+            },
+            styles: { fontSize: 9, cellPadding: 4 },
+            alternateRowStyles: { fillColor: [243, 244, 246] }
         });
 
         const finalY = (doc as any).lastAutoTable?.finalY || 120;
 
-        // Totals Section (Right Aligned)
-        const totalsX = pageWidth - 60;
-        doc.text(`Subtotal:`, totalsX, finalY + 10);
-        doc.text(`${(invoice.subtotal || 0).toFixed(2)}`, pageWidth - 20, finalY + 10, { align: 'right' });
+        // --- Totals Section (Right) ---
+        const totalsX = pageWidth - 70;
+        doc.setFontSize(10);
+        doc.setFont('helvetica', 'normal');
 
-        doc.text(`Tax:`, totalsX, finalY + 15);
-        doc.text(`${(invoice.taxAmount || 0).toFixed(2)}`, pageWidth - 20, finalY + 15, { align: 'right' });
+        doc.text(`Subtotal:`, totalsX, finalY + 10);
+        doc.text(`${(invoice.subtotal || 0).toFixed(2)}`, pageWidth - 15, finalY + 10, { align: 'right' });
+
+        doc.text(`Tax:`, totalsX, finalY + 16);
+        doc.text(`${(invoice.taxAmount || 0).toFixed(2)}`, pageWidth - 15, finalY + 16, { align: 'right' });
 
         if (invoice.discount) {
-            doc.text(`Discount:`, totalsX, finalY + 20);
-            doc.text(`-${invoice.discount.toFixed(2)}`, pageWidth - 20, finalY + 20, { align: 'right' });
+            doc.text(`Discount:`, totalsX, finalY + 22);
+            doc.text(`-${Number(invoice.discount).toFixed(2)}`, pageWidth - 15, finalY + 22, { align: 'right' });
         }
 
-        doc.setFontSize(11);
+        doc.setFontSize(12);
         doc.setFont('helvetica', 'bold');
-        doc.text(`Total:`, totalsX, finalY + 30);
-        doc.text(`${(invoice.totalAmount || 0).toFixed(2)}`, pageWidth - 20, finalY + 30, { align: 'right' });
+        doc.text(`Total:`, totalsX, finalY + 32);
+        doc.text(`${(invoice.totalAmount || 0).toFixed(2)}`, pageWidth - 15, finalY + 32, { align: 'right' });
 
-        // Footer Section: Bank Details & Signatory
-        const footerY = finalY + 45;
+        // --- Footer (Bank & Terms) ---
+        const footerY = finalY + 50;
 
-        // Bank Details (Left)
+        // Bank Details
         if (companyInfo?.bankDetails) {
             doc.setFontSize(10);
             doc.setFont('helvetica', 'bold');
-            doc.text("Bank Details:", 20, footerY);
+            doc.text("Bank Details:", 15, footerY);
 
             doc.setFontSize(9);
             doc.setFont('helvetica', 'normal');
-            doc.text(`Bank: ${companyInfo.bankDetails.bankName || '-'}`, 20, footerY + 6);
-            doc.text(`A/c No: ${companyInfo.bankDetails.accountNumber || '-'}`, 20, footerY + 11);
-            doc.text(`IFSC: ${companyInfo.bankDetails.ifscCode || '-'}`, 20, footerY + 16);
-            doc.text(`Branch: ${companyInfo.bankDetails.branch || '-'}`, 20, footerY + 21);
-            if (companyInfo.bankDetails.accountName) {
-                doc.text(`A/c Name: ${companyInfo.bankDetails.accountName}`, 20, footerY + 26);
-            }
+            doc.text(`Bank: ${companyInfo.bankDetails.bankName || '-'}`, 15, footerY + 6);
+            doc.text(`A/c No: ${companyInfo.bankDetails.accountNumber || '-'}`, 15, footerY + 11);
+            doc.text(`IFSC: ${companyInfo.bankDetails.ifscCode || '-'}`, 15, footerY + 16);
         }
 
-        // Terms (Below Bank Details or Side?)
+        // Terms
         if (companyInfo?.commercialTerms) {
             doc.setFontSize(9);
             doc.setFont('helvetica', 'bold');
-            doc.text("Terms & Conditions:", 20, footerY + 40);
+            doc.text("Terms & Conditions:", 15, footerY + 30);
             doc.setFont('helvetica', 'normal');
-            doc.text(companyInfo.commercialTerms, 20, footerY + 46, { maxWidth: 100 });
+            doc.text(companyInfo.commercialTerms, 15, footerY + 36, { maxWidth: 100 });
         }
 
-        // Authorized Signatory (Right)
+        // Signatory
         doc.setFontSize(10);
         doc.setFont('helvetica', 'bold');
-        doc.text("For " + (companyInfo?.companyName || "Company"), pageWidth - 20, footerY + 20, { align: 'right' });
-        doc.text("Authorized Signatory", pageWidth - 20, footerY + 40, { align: 'right' });
+        doc.text("Authorized Signatory", pageWidth - 15, footerY + 10, { align: 'right' });
+        doc.setFontSize(9);
+        doc.setFont('helvetica', 'normal');
+        doc.text(`For ${companyInfo?.companyName || 'Company'}`, pageWidth - 15, footerY + 16, { align: 'right' });
 
         doc.save(`Invoice_${invoice.invoiceNumber}.pdf`);
     } catch (error) {
         console.error("PDF Error", error);
         alert("Failed to generate PDF. check console details.");
+    }
+};
+
+const downloadSingleBillingExcel = (invoice: any, companyInfo?: CompanyInfo) => {
+    try {
+        // Customer Info
+        const custName = typeof invoice.customer === 'object' ? invoice.customer.name : invoice.customerName;
+        const custAddress = typeof invoice.customer === 'object' ? invoice.customer.address : (invoice.customerAddress || '');
+        const custGST = typeof invoice.customer === 'object' ? invoice.customer.gstNumber : (invoice.customerGST || '');
+
+        const workbook = XLSX.utils.book_new();
+
+        const sheetData = [
+            // Company Info
+            [companyInfo?.companyName || ''],
+            [companyInfo?.billingAddress || ''],
+            [`GSTIN: ${companyInfo?.gstNumber || ''}`],
+            [],
+            // Invoice Info
+            ['TAX INVOICE'],
+            ['Invoice No', invoice.invoiceNumber],
+            ['Date', new Date(invoice.date).toLocaleDateString()],
+            ['Status', invoice.status],
+            [],
+            // Customer Info
+            ['Bill To:'],
+            ['Name', custName],
+            ['Address', custAddress],
+            ['GSTIN', custGST],
+            [],
+            // Items Header
+            ['Item', 'HSN Code', 'Quantity', 'Rate', 'Tax Rate', 'Tax Amount', 'Amount'],
+        ];
+
+        // Items
+        invoice.items.forEach((item: any) => {
+            sheetData.push([
+                item.materialName,
+                item.hsnCode || '-',
+                item.quantity,
+                item.rate,
+                item.taxRate ? `${item.taxRate}%` : '0%',
+                item.taxAmount,
+                item.amount
+            ]);
+        });
+
+        sheetData.push([]);
+        sheetData.push(['', '', '', '', 'Subtotal', invoice.subtotal]);
+        sheetData.push(['', '', '', '', 'Tax', invoice.taxAmount]);
+        sheetData.push(['', '', '', '', 'Total', invoice.totalAmount]);
+
+        // Bank Details
+        if (companyInfo?.bankDetails) {
+            sheetData.push([]);
+            sheetData.push(['Bank Details:']);
+            sheetData.push(['Bank', companyInfo.bankDetails.bankName]);
+            sheetData.push(['Account No', companyInfo.bankDetails.accountNumber]);
+            sheetData.push(['IFSC', companyInfo.bankDetails.ifscCode]);
+        }
+
+        const worksheet = XLSX.utils.aoa_to_sheet(sheetData);
+        // Column widths
+        worksheet['!cols'] = [{ wch: 25 }, { wch: 15 }, { wch: 10 }, { wch: 10 }, { wch: 10 }, { wch: 12 }, { wch: 15 }];
+
+        XLSX.utils.book_append_sheet(workbook, worksheet, 'Invoice Details');
+        XLSX.writeFile(workbook, `Invoice_${invoice.invoiceNumber}.xlsx`);
+    } catch (err) {
+        console.error("Excel Error", err);
     }
 };
 
@@ -220,6 +282,13 @@ export default function BillingTable({ data, companyInfo, onEdit, onDelete }: Bi
                                         title="Generate E-Way Bill"
                                     >
                                         <Truck size={16} />
+                                    </button>
+                                    <button
+                                        onClick={() => downloadSingleBillingExcel(item, companyInfo)}
+                                        className="p-2 text-green-600 hover:bg-green-50 rounded-lg transition-colors"
+                                        title="Download Excel"
+                                    >
+                                        <FileText size={16} />
                                     </button>
                                     <button
                                         onClick={() => downloadInvoiceAsPDF(item, companyInfo)}
