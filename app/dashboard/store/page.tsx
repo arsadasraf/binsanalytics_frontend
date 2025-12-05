@@ -21,7 +21,7 @@ import SuccessAlert from "@/src/components/SuccessAlert";
 import * as XLSX from 'xlsx';
 
 // Import custom types
-import { TabType, MasterType, GRNFormData } from "./types/store.types";
+import { TabType, MasterType, GRNFormData, POFormData } from "./types/store.types";
 
 // Import custom hook for business logic
 import { useStoreData } from "./components/hooks/useStoreData";
@@ -32,7 +32,9 @@ import MasterTabs from "./components/MasterTabs";
 import SearchBar from "./components/SearchBar";
 import StoreForm from "./components/forms/StoreForm";
 import StoreTable from "./components/tables/StoreTable";
+import POTable from "./components/tables/POTable";
 import GRNModal from "./components/GRNModal";
+import POModal from "./components/POModal";
 
 /**
  * StoreContent Component
@@ -51,6 +53,10 @@ function StoreContent() {
   // State for GRN modal
   const [showGRNModal, setShowGRNModal] = useState(false);
   const [editingGRN, setEditingGRN] = useState<GRNFormData | undefined>(undefined);
+
+  // State for PO modal
+  const [showPOModal, setShowPOModal] = useState(false);
+  const [editingPO, setEditingPO] = useState<POFormData | undefined>(undefined);
 
   // Get authentication token from localStorage
   const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
@@ -81,6 +87,8 @@ function StoreContent() {
     handleCancel,
     handleGRNSubmit,
     handleGRNUpdate,
+    handlePOSubmit,
+    handlePOUpdate,
     addItem,
     updateItem,
     removeItem,
@@ -99,6 +107,24 @@ function StoreContent() {
       }
       setShowGRNModal(false);
       setEditingGRN(undefined);
+    } catch (err) {
+      // Error is already handled in hook
+    }
+  };
+
+  /**
+   * Handles PO creation/update from modal
+   * Closes modal on success
+   */
+  const onPOSubmit = async (poData: POFormData) => {
+    try {
+      if (editingPO && editingPO._id) {
+        await handlePOUpdate(editingPO._id, poData);
+      } else {
+        await handlePOSubmit(poData);
+      }
+      setShowPOModal(false);
+      setEditingPO(undefined);
     } catch (err) {
       // Error is already handled in hook
     }
@@ -128,6 +154,28 @@ function StoreContent() {
     } else {
       handleEdit(item);
     }
+  };
+
+  /**
+   * Handles PO edit action
+   * Opens PO modal with prepopulated data
+   */
+  const handlePOEdit = (item: any) => {
+    const poData: POFormData = {
+      _id: item._id,
+      poNumber: item.poNumber,
+      date: item.date,
+      vendor: item.vendor?._id || item.vendor || '',
+      material: item.material || (item.items && item.items.length > 0 ? item.items[0]?.material : ''),
+      materialName: item.materialName || (item.items && item.items.length > 0 ? item.items[0]?.materialName : ''),
+      quantity: item.quantity || (item.items && item.items.length > 0 ? item.items[0]?.quantity : 0),
+      unit: item.unit || (item.items && item.items.length > 0 ? item.items[0]?.unit : ''),
+      rate: item.rate || (item.items && item.items.length > 0 ? item.items[0]?.rate : 0),
+      amount: item.amount || (item.items && item.items.length > 0 ? item.items[0]?.amount : 0),
+      category: item.category || '',
+    };
+    setEditingPO(poData);
+    setShowPOModal(true);
   };
 
   /**
@@ -280,6 +328,24 @@ function StoreContent() {
           </div>
         )}
 
+        {/* Create PO button - only shown in PO tab */}
+        {activeTab === "po" && (
+          <div className="mb-6">
+            <button
+              onClick={() => {
+                setEditingPO(undefined);
+                setShowPOModal(true);
+              }}
+              className="px-6 py-3 bg-purple-600 text-white rounded-lg font-semibold hover:bg-purple-700 transition-colors flex items-center gap-2"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" />
+              </svg>
+              Create Purchase Order
+            </button>
+          </div>
+        )}
+
         {/* Form for creating/editing records */}
         <StoreForm
           activeTab={activeTab}
@@ -301,14 +367,22 @@ function StoreContent() {
         />
 
         {/* Table for displaying data */}
-        <StoreTable
-          activeTab={activeTab}
-          masterTab={masterTab}
-          data={data}
-          loading={loading}
-          onEdit={handleMasterEdit}
-          onDelete={handleDelete}
-        />
+        {activeTab === "po" ? (
+          <POTable
+            data={data}
+            onEdit={handlePOEdit}
+            onDelete={handleDelete}
+          />
+        ) : (
+          <StoreTable
+            activeTab={activeTab}
+            masterTab={masterTab}
+            data={data}
+            loading={loading}
+            onEdit={handleMasterEdit}
+            onDelete={handleDelete}
+          />
+        )}
 
         {/* GRN Modal */}
         <GRNModal
@@ -325,6 +399,21 @@ function StoreContent() {
           loading={loading}
           initialData={editingGRN}
           isEditing={!!editingGRN}
+        />
+
+        {/* PO Modal */}
+        <POModal
+          isOpen={showPOModal}
+          onClose={() => {
+            setShowPOModal(false);
+            setEditingPO(undefined);
+          }}
+          onSubmit={onPOSubmit}
+          materials={materials}
+          vendors={vendors}
+          loading={loading}
+          initialData={editingPO}
+          isEditing={!!editingPO}
         />
       </div>
 

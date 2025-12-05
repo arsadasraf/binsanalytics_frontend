@@ -19,7 +19,7 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { apiGet, apiPost, apiPut, apiDelete } from "@/src/lib/api";
-import { TabType, MasterType, FormData, Vendor, Customer, Location, Category, Material, GRNFormData } from "../../types/store.types";
+import { TabType, MasterType, FormData, Vendor, Customer, Location, Category, Material, GRNFormData, POFormData } from "../../types/store.types";
 
 export function useStoreData(activeTab: TabType, masterTab: MasterType, token: string | null) {
     // ==================== State Management ====================
@@ -389,6 +389,51 @@ export function useStoreData(activeTab: TabType, masterTab: MasterType, token: s
         }
     };
 
+    /**
+     * Handles PO submission from modal
+     * @param poData - PO form data from modal
+     */
+    const handlePOSubmit = async (poData: POFormData) => {
+        if (!token) return;
+
+        setLoading(true);
+        try {
+            await apiPost("/api/store/po", poData, token);
+            setSuccess("Purchase Order created successfully");
+
+            // Refresh PO data
+            fetchData();
+        } catch (err: any) {
+            setError(err.message || "Failed to create Purchase Order");
+            throw err; // Re-throw to let modal handle it
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    /**
+     * Handles PO update from modal
+     * @param id - PO ID
+     * @param poData - PO form data from modal
+     */
+    const handlePOUpdate = async (id: string, poData: POFormData) => {
+        if (!token) return;
+
+        setLoading(true);
+        try {
+            await apiPut(`/api/store/po/${id}`, poData, token);
+            setSuccess("Purchase Order updated successfully");
+
+            // Refresh PO data
+            fetchData();
+        } catch (err: any) {
+            setError(err.message || "Failed to update Purchase Order");
+            throw err; // Re-throw to let modal handle it
+        } finally {
+            setLoading(false);
+        }
+    };
+
     // ==================== Return Hook Interface ====================
 
     return {
@@ -421,6 +466,8 @@ export function useStoreData(activeTab: TabType, masterTab: MasterType, token: s
         handleCancel,
         handleGRNSubmit,
         handleGRNUpdate,
+        handlePOSubmit,
+        handlePOUpdate,
         addItem,
         updateItem,
         removeItem,

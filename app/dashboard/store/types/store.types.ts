@@ -161,6 +161,32 @@ export interface GRNFormData {
     }>;
 }
 
+// PO Form Data for new workflow
+export interface POFormData {
+    _id?: string; // For edit mode
+    poNumber?: string;  // Auto-generated
+    date: string;
+    vendor: string;  // Vendor ID
+    // Single material fields (backward compatibility)
+    material: string;  // Material ID from master
+    materialName?: string;
+    quantity: number;
+    unit?: string;  // Auto-filled from material's category
+    rate: number;  // Price per unit
+    amount?: number;  // Auto-calculated: quantity * rate
+    category?: string;  // Auto-filled from material's category
+    // Multiple materials support
+    items?: Array<{
+        material: string;
+        materialName: string;
+        quantity: number;
+        unit: string;
+        rate: number;
+        amount: number;
+    }>;
+    totalAmount?: number;  // Total of all items
+}
+
 // Props interfaces for components
 export interface StoreHeaderProps {
     // No props needed - static content
@@ -237,5 +263,17 @@ export interface GRNModalProps {
     categories: Category[];  // Still needed for material form
     loading: boolean;
     initialData?: GRNFormData;
+    isEditing?: boolean;
+}
+
+// PO Modal Props
+export interface POModalProps {
+    isOpen: boolean;
+    onClose: () => void;
+    onSubmit: (data: POFormData) => void;
+    materials: Material[];
+    vendors: Vendor[];
+    loading: boolean;
+    initialData?: POFormData;
     isEditing?: boolean;
 }
