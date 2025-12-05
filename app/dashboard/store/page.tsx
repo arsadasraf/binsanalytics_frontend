@@ -41,6 +41,8 @@ import BillingModal from "./components/BillingModal";
 import CompanyInfoForm from "./components/forms/CompanyInfoForm";
 import DCTable from "./components/tables/DCTable";
 import BillingTable from "./components/tables/BillingTable";
+import MaterialIssueTab from "./components/MaterialIssueTab";
+import StoreTabs from "./components/StoreTabs";
 
 /**
  * StoreContent Component
@@ -118,6 +120,11 @@ function StoreContent() {
     endDate,
     setStartDate,
     setEndDate,
+    materialRequests,
+    createMaterialRequest,
+    updateMaterialRequest,
+    createMaterialIssue,
+    updateMaterialIssue,
   } = useStoreData(activeTab, masterTab, token);
 
   /**
@@ -422,6 +429,9 @@ function StoreContent() {
         {error && <ErrorAlert message={error} onClose={() => setError("")} />}
         {success && <SuccessAlert message={success} onClose={() => setSuccess("")} />}
 
+        {/* Main Navigation Tabs */}
+        <StoreTabs activeTab={activeTab} />
+
         {/* Master tabs - only shown when masters tab is active */}
         {activeTab === "masters" && (
           <div className="mb-6">
@@ -653,6 +663,17 @@ function StoreContent() {
             onSubmit={saveCompanyInfo}
             loading={loading}
           />
+        ) : activeTab === "material-issue" ? (
+          <MaterialIssueTab storeData={{
+            data,
+            materialRequests,
+            createMaterialRequest,
+            updateMaterialRequest,
+            createMaterialIssue,
+            updateMaterialIssue,
+            materials,
+            loading,
+          }} token={token} />
         ) : (
           <StoreTable
             activeTab={activeTab}

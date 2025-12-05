@@ -26,6 +26,7 @@ export function useStoreData(activeTab: TabType, masterTab: MasterType, token: s
 
     // Data and UI state
     const [data, setData] = useState<any[]>([]);
+    const [materialRequests, setMaterialRequests] = useState<any[]>([]); // New state for requests
     const [loading, setLoading] = useState(false);
     const [showForm, setShowForm] = useState(false);
     const [formData, setFormData] = useState<StoreFormData>({ items: [] });
@@ -99,6 +100,12 @@ export function useStoreData(activeTab: TabType, masterTab: MasterType, token: s
                 const result = await apiGet(endpoint, token);
                 // Handle different response structures
                 setData(result.data || result[Object.keys(result)[0]] || []);
+            }
+
+            // Fetch Material Requests if on material-issue tab
+            if (activeTab === "material-issue") {
+                const reqResult = await apiGet("/api/store/material-request", token);
+                setMaterialRequests(reqResult.materialRequests || []);
             }
         } catch (err: any) {
             setError(err.message || "Failed to load data");
@@ -551,6 +558,11 @@ export function useStoreData(activeTab: TabType, masterTab: MasterType, token: s
      * @param id - Invoice ID
      * @param billingData - Billing form data from modal
      */
+    /**
+     * Handles Billing/Invoice update from modal
+     * @param id - Invoice ID
+     * @param billingData - Billing form data from modal
+     */
     const handleBillingUpdate = async (id: string, billingData: BillingFormData) => {
         if (!token) return;
 
@@ -563,6 +575,87 @@ export function useStoreData(activeTab: TabType, masterTab: MasterType, token: s
             fetchData();
         } catch (err: any) {
             setError(err.message || "Failed to update Invoice");
+            throw err;
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    // ==================== Material Issue & Request Operations ====================
+
+    /**
+     * Create Material Request
+     */
+    const createMaterialRequest = async (data: any) => {
+        if (!token) return;
+        setLoading(true);
+        try {
+            await apiPost("/api/store/material-request", data, token);
+            setSuccess("Material request submitted successfully");
+            fetchData(); // Refresh list
+        } catch (err: any) {
+            setError(err.message || "Failed to submit material request");
+            throw err;
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    /**
+     * Update Material Request (e.g. Reject)
+     */
+    const updateMaterialRequest = async (id: string, data: any) => {
+        if (!token) return;
+        setLoading(true);
+        try {
+            await apiPut(`/api/store/material-request/${id}`, data, token);
+            setSuccess(`Request ${data.status.toLowerCase()} successfully`);
+            fetchData();
+        } catch (err: any) {
+            setError(err.message || "Failed to update request");
+            throw err;
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    /**
+     * Create Material Issue (Direct or from Request)
+     */
+    const createMaterialIssue = async (data: any) => {
+        if (!token) return;
+        setLoading(true);
+        try {
+            // Create Issue
+            await apiPost("/api/store/material-issue", data, token);
+
+            // If linked to a request, mark request as Issued
+            if (data.requestId) {
+                await apiPut(`/api/store/material-request/${data.requestId}`, { status: 'Issued' }, token);
+            }
+
+            setSuccess("Material issued successfully");
+            fetchData();
+        } catch (err: any) {
+            setError(err.message || "Failed to issue material");
+            throw err;
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    /**
+     * Update Material Issue (e.g. Return)
+     */
+    const updateMaterialIssue = async (id: string, data: any) => {
+        if (!token) return;
+        setLoading(true);
+        try {
+            await apiPut(`/api/store/material-issue/${id}`, data, token);
+            setSuccess("Material issue updated successfully");
+            fetchData();
+        } catch (err: any) {
+            setError(err.message || "Failed to update material issue");
             throw err;
         } finally {
             setLoading(false);
@@ -616,5 +709,12 @@ export function useStoreData(activeTab: TabType, masterTab: MasterType, token: s
         endDate,
         setStartDate,
         setEndDate,
+
+        // Material Issue & Request Handlers
+        createMaterialRequest,
+        updateMaterialRequest,
+        createMaterialIssue,
+        updateMaterialIssue,
+        materialRequests,
     };
 }
