@@ -15,11 +15,11 @@
  */
 
 import React from 'react';
-import { FormData, MasterType, Category, Location } from '../../types/store.types';
+import { StoreFormData, MasterType, Category, Location } from '../../types/store.types';
 
 interface MasterFormProps {
-    formData: FormData;
-    setFormData: (data: FormData) => void;
+    formData: StoreFormData;
+    setFormData: (data: StoreFormData) => void;
     masterTab: MasterType;
     categories?: Category[];
     locations?: Location[];

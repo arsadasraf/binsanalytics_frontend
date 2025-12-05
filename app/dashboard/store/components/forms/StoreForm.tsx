@@ -22,7 +22,7 @@
  */
 
 import React from 'react';
-import { TabType, MasterType, FormData, Vendor, Customer, Category, Location } from '../../types/store.types';
+import { TabType, MasterType, StoreFormData, Vendor, Customer, Category, Location } from '../../types/store.types';
 import MasterForm from './MasterForm';
 import GRNForm from './GRNForm';
 import DCForm from './DCForm';
@@ -35,8 +35,8 @@ interface StoreFormProps {
     activeTab: TabType;
     masterTab: MasterType;
     showForm: boolean;
-    formData: FormData;
-    setFormData: (data: FormData) => void;
+    formData: StoreFormData;
+    setFormData: (data: StoreFormData) => void;
     editingId: string | null;
     loading: boolean;
     vendors: Vendor[];

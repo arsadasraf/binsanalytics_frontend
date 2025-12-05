@@ -10,11 +10,11 @@
  */
 
 import React from 'react';
-import { FormData, Vendor } from '../../types/store.types';
+import { StoreFormData, Vendor } from '../../types/store.types';
 
 interface POFormProps {
-    formData: FormData;
-    setFormData: (data: FormData) => void;
+    formData: StoreFormData;
+    setFormData: (data: StoreFormData) => void;
     vendors: Vendor[];
 }
 

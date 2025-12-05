@@ -9,11 +9,15 @@ export const apiRequest = async (
   options: FetchOptions = {}
 ): Promise<Response> => {
   const { token, ...fetchOptions } = options;
-  
+
   const headers: HeadersInit = {
-    "Content-Type": "application/json",
     ...fetchOptions.headers,
   };
+
+  // Only set Content-Type to application/json if body is not FormData
+  if (!(fetchOptions.body instanceof FormData)) {
+    headers["Content-Type"] = "application/json";
+  }
 
   if (token) {
     headers.Authorization = `Bearer ${token}`;
@@ -49,9 +53,10 @@ export const apiGet = async (endpoint: string, token?: string | null) => {
 };
 
 export const apiPost = async (endpoint: string, data: any, token?: string | null) => {
+  const isFormData = data instanceof FormData;
   const response = await apiRequest(endpoint, {
     method: "POST",
-    body: JSON.stringify(data),
+    body: isFormData ? data : JSON.stringify(data),
     token,
   });
 
@@ -64,9 +69,10 @@ export const apiPost = async (endpoint: string, data: any, token?: string | null
 };
 
 export const apiPut = async (endpoint: string, data: any, token?: string | null) => {
+  const isFormData = data instanceof FormData;
   const response = await apiRequest(endpoint, {
     method: "PUT",
-    body: JSON.stringify(data),
+    body: isFormData ? data : JSON.stringify(data),
     token,
   });
 

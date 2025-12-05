@@ -6,6 +6,7 @@
  * - PO list with download buttons (PDF/Excel)
  * - 12-hour edit/delete restriction
  * - Purple-themed UI matching PO module
+ * - Professional PDF/Excel generation with Company Info
  */
 
 import React from 'react';
@@ -13,9 +14,11 @@ import { Edit2, Trash2, Download, FileSpreadsheet } from 'lucide-react';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import * as XLSX from 'xlsx';
+import { CompanyInfo } from '../../types/store.types';
 
 interface POTableProps {
     data: any[];
+    companyInfo?: CompanyInfo;
     onEdit: (item: any) => void;
     onDelete: (id: string) => void;
 }
@@ -27,20 +30,63 @@ const isWithin12Hours = (createdAt: string | Date): boolean => {
     return hoursDiff <= 12;
 };
 
-const downloadPOAsPDF = (po: any) => {
+const downloadPOAsPDF = (po: any, companyInfo?: CompanyInfo) => {
     try {
         console.log('Generating PDF for PO:', po);
         const doc = new jsPDF();
 
-        doc.setFontSize(18);
-        doc.text('Purchase Order', 105, 20, { align: 'center' } as any);
+        // --- Header Section ---
+        // Company Name
+        doc.setFontSize(22);
+        doc.setTextColor(147, 51, 234); // Purple color
+        doc.text(companyInfo?.companyName || 'Company Name', 20, 20);
 
+        // Company Details (Right aligned)
+        doc.setFontSize(10);
+        doc.setTextColor(100);
+        const rightMargin = 190;
+        let yPos = 20;
+
+        if (companyInfo) {
+            if (companyInfo.contactNumber) {
+                doc.text(`Ph: ${companyInfo.contactNumber}`, rightMargin, yPos, { align: 'right' });
+                yPos += 5;
+            }
+            if (companyInfo.email) {
+                doc.text(`Email: ${companyInfo.email}`, rightMargin, yPos, { align: 'right' });
+                yPos += 5;
+            }
+            if (companyInfo.gstNumber) {
+                doc.text(`GSTIN: ${companyInfo.gstNumber}`, rightMargin, yPos, { align: 'right' });
+                yPos += 5;
+            }
+        }
+
+        // Address (Below Company Name)
+        doc.setFontSize(10);
+        doc.setTextColor(80);
+        const addressLines = doc.splitTextToSize(companyInfo?.billingAddress || '', 80);
+        doc.text(addressLines, 20, 30);
+
+        // Line Separator
+        doc.setDrawColor(200);
+        doc.line(20, 45, 190, 45);
+
+        // --- PO Details Section ---
+        doc.setFontSize(16);
+        doc.setTextColor(0);
+        doc.text('PURCHASE ORDER', 105, 55, { align: 'center' } as any);
+
+        doc.setFontSize(10);
+        doc.text(`PO Number: ${po.poNumber}`, 20, 65);
+        doc.text(`Date: ${new Date(po.date).toLocaleDateString()}`, 20, 70);
+        doc.text(`Status: ${po.status}`, 20, 75);
+
+        doc.text(`Vendor:`, 140, 65);
         doc.setFontSize(11);
-        doc.text(`PO Number: ${po.poNumber}`, 20, 35);
-        doc.text(`Date: ${new Date(po.date).toLocaleDateString()}`, 20, 42);
-        doc.text(`Vendor: ${po.vendorName || po.vendor?.name || 'N/A'}`, 20, 49);
-        doc.text(`Status: ${po.status}`, 20, 56);
+        doc.text(`${po.vendorName || po.vendor?.name || 'N/A'}`, 140, 70);
 
+        // --- Items Table ---
         // Handle both single material and items array
         const items = po.items && po.items.length > 0 ? po.items : [{
             materialName: po.materialName,
@@ -59,20 +105,68 @@ const downloadPOAsPDF = (po: any) => {
         ]);
 
         autoTable(doc, {
-            startY: 65,
+            startY: 85,
             head: [['Material', 'Quantity', 'Unit', 'Rate (₹)', 'Amount (₹)']],
             body: tableData,
             theme: 'grid',
-            headStyles: { fillColor: [147, 51, 234] },
-            styles: { fontSize: 10 }
+            headStyles: {
+                fillColor: [147, 51, 234],
+                textColor: 255,
+                fontStyle: 'bold'
+            },
+            styles: { fontSize: 10, cellPadding: 3 },
+            alternateRowStyles: { fillColor: [245, 243, 255] } // Light purple alternate rows
         });
 
         const finalY = (doc as any).lastAutoTable?.finalY || 100;
-        doc.setFontSize(11);
-        doc.text(`Total Amount: ₹ ${(po.totalAmount || po.amount || 0).toFixed(2)}`, 20, finalY + 10);
 
-        doc.setFontSize(9);
-        doc.text(`Generated: ${new Date().toLocaleString()}`, 105, finalY + 20, { align: 'center' } as any);
+        // --- Totals Section ---
+        doc.setFontSize(12);
+        doc.setTextColor(0);
+        doc.setFont('helvetica', 'bold');
+        doc.text(`Total Amount: ₹ ${(po.totalAmount || po.amount || 0).toFixed(2)}`, 140, finalY + 10);
+        doc.setFont('helvetica', 'normal');
+
+        // --- Footer Section ---
+        let footerY = finalY + 25;
+
+        if (companyInfo?.commercialTerms) {
+            doc.setFontSize(10);
+            doc.setFont('helvetica', 'bold');
+            doc.text('Terms & Conditions:', 20, footerY);
+            doc.setFont('helvetica', 'normal');
+            doc.setFontSize(9);
+            doc.setTextColor(80);
+            const termsLines = doc.splitTextToSize(companyInfo.commercialTerms, 170);
+            doc.text(termsLines, 20, footerY + 5);
+            footerY += 10 + (termsLines.length * 4);
+        }
+
+        if (companyInfo?.qualitySpecs) {
+            doc.setFontSize(10);
+            doc.setFont('helvetica', 'bold');
+            doc.setTextColor(0);
+            doc.text('Quality Specifications:', 20, footerY);
+            doc.setFont('helvetica', 'normal');
+            doc.setFontSize(9);
+            doc.setTextColor(80);
+            const specsLines = doc.splitTextToSize(companyInfo.qualitySpecs, 170);
+            doc.text(specsLines, 20, footerY + 5);
+            footerY += 10 + (specsLines.length * 4);
+        }
+
+        // Signatory
+        doc.setFontSize(10);
+        doc.setTextColor(0);
+        doc.text('Authorized Signatory', 150, footerY + 20);
+        doc.text('___________________', 150, footerY + 35);
+        doc.setFontSize(8);
+        doc.text(`For ${companyInfo?.companyName || 'Company'}`, 150, footerY + 40);
+
+        // Generated timestamp
+        doc.setFontSize(8);
+        doc.setTextColor(150);
+        doc.text(`Generated on: ${new Date().toLocaleString()}`, 105, 290, { align: 'center' } as any);
 
         const filename = `PO_${po.poNumber.replace(/\//g, '_')}_${new Date().toISOString().split('T')[0]}.pdf`;
         doc.save(filename);
@@ -82,9 +176,13 @@ const downloadPOAsPDF = (po: any) => {
     }
 };
 
-const downloadPOAsExcel = (po: any) => {
+const downloadPOAsExcel = (po: any, companyInfo?: CompanyInfo) => {
     const poDetails = [
-        ['Purchase Order'],
+        [companyInfo?.companyName || 'Purchase Order'],
+        [companyInfo?.billingAddress || ''],
+        [`GSTIN: ${companyInfo?.gstNumber || ''}`],
+        [],
+        ['PURCHASE ORDER'],
         [],
         ['PO Number:', po.poNumber],
         ['Date:', new Date(po.date).toLocaleDateString()],
@@ -115,6 +213,11 @@ const downloadPOAsExcel = (po: any) => {
     poDetails.push([]);
     poDetails.push(['Total Amount:', '', '', '', po.totalAmount || po.amount || 0]);
 
+    if (companyInfo?.commercialTerms) {
+        poDetails.push([]);
+        poDetails.push(['Terms & Conditions:', companyInfo.commercialTerms]);
+    }
+
     const worksheet = XLSX.utils.aoa_to_sheet(poDetails);
     worksheet['!cols'] = [{ wch: 25 }, { wch: 12 }, { wch: 10 }, { wch: 15 }, { wch: 15 }];
 
@@ -123,7 +226,7 @@ const downloadPOAsExcel = (po: any) => {
     XLSX.writeFile(workbook, `PO_${po.poNumber}_${new Date().toISOString().split('T')[0]}.xlsx`);
 };
 
-export default function POTable({ data, onEdit, onDelete }: POTableProps) {
+export default function POTable({ data, companyInfo, onEdit, onDelete }: POTableProps) {
     if (data.length === 0) {
         return (
             <div className="text-center py-12 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
@@ -170,14 +273,14 @@ export default function POTable({ data, onEdit, onDelete }: POTableProps) {
                             <td className="px-6 py-4 text-right">
                                 <div className="flex justify-end gap-2">
                                     <button
-                                        onClick={() => downloadPOAsPDF(item)}
+                                        onClick={() => downloadPOAsPDF(item, companyInfo)}
                                         className="p-2 text-purple-600 hover:bg-purple-50 rounded-lg transition-colors"
                                         title="Download PDF"
                                     >
                                         <Download size={16} />
                                     </button>
                                     <button
-                                        onClick={() => downloadPOAsExcel(item)}
+                                        onClick={() => downloadPOAsExcel(item, companyInfo)}
                                         className="p-2 text-green-600 hover:bg-green-50 rounded-lg transition-colors"
                                         title="Download Excel"
                                     >

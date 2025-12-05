@@ -373,6 +373,7 @@ function StoreContent() {
         {activeTab === "po" ? (
           <POTable
             data={data}
+            companyInfo={companyInfo}
             onEdit={handlePOEdit}
             onDelete={handleDelete}
           />

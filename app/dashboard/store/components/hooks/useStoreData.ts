@@ -19,7 +19,7 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { apiGet, apiPost, apiPut, apiDelete } from "@/src/lib/api";
-import { TabType, MasterType, FormData, Vendor, Customer, Location, Category, Material, GRNFormData, POFormData, CompanyInfo } from "../../types/store.types";
+import { TabType, MasterType, StoreFormData, Vendor, Customer, Location, Category, Material, GRNFormData, POFormData, CompanyInfo } from "../../types/store.types";
 
 export function useStoreData(activeTab: TabType, masterTab: MasterType, token: string | null) {
     // ==================== State Management ====================
@@ -28,7 +28,7 @@ export function useStoreData(activeTab: TabType, masterTab: MasterType, token: s
     const [data, setData] = useState<any[]>([]);
     const [loading, setLoading] = useState(false);
     const [showForm, setShowForm] = useState(false);
-    const [formData, setFormData] = useState<FormData>({ items: [] });
+    const [formData, setFormData] = useState<StoreFormData>({ items: [] });
     const [error, setError] = useState("");
     const [success, setSuccess] = useState("");
     const [searchTerm, setSearchTerm] = useState("");
@@ -121,7 +121,7 @@ export function useStoreData(activeTab: TabType, masterTab: MasterType, token: s
         }
     };
 
-    const saveCompanyInfo = async (info: CompanyInfo) => {
+    const saveCompanyInfo = async (info: CompanyInfo | FormData) => {
         if (!token) return;
         setLoading(true);
         try {

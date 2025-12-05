@@ -10,11 +10,11 @@
  */
 
 import React from 'react';
-import { FormData, Customer } from '../../types/store.types';
+import { StoreFormData, Customer } from '../../types/store.types';
 
 interface BillingFormProps {
-    formData: FormData;
-    setFormData: (data: FormData) => void;
+    formData: StoreFormData;
+    setFormData: (data: StoreFormData) => void;
     customers: Customer[];
 }
 

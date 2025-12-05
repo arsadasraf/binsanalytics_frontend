@@ -9,11 +9,11 @@
  */
 
 import React from 'react';
-import { FormData } from '../../types/store.types';
+import { StoreFormData } from '../../types/store.types';
 
 interface MaterialIssueFormProps {
-    formData: FormData;
-    setFormData: (data: FormData) => void;
+    formData: StoreFormData;
+    setFormData: (data: StoreFormData) => void;
 }
 
 export default function MaterialIssueForm({ formData, setFormData }: MaterialIssueFormProps) {

@@ -26,7 +26,7 @@ export interface Item {
 }
 
 // Form data interface - flexible to accommodate all form types
-export interface FormData {
+export interface StoreFormData {
     _id?: string;
     items?: Item[];
 
@@ -43,6 +43,7 @@ export interface FormData {
     description?: string;
     unit?: string;
     categoryId?: string;  // For material master
+    locationId?: string;  // For material master
     bankDetails?: BankDetails;  // For vendor and customer
 
     // Transaction fields
