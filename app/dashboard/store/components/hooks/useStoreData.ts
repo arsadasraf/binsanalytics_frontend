@@ -215,9 +215,19 @@ export function useStoreData(activeTab: TabType, masterTab: MasterType, token: s
 
             // Search in transaction/inventory fields
             return (
+                // General Store Item / Material Issue fields
                 (item.materialName?.toLowerCase().includes(searchLower) || false) ||
-                (item.number?.toLowerCase().includes(searchLower) || false) ||
-                (item.code?.toLowerCase().includes(searchLower) || false)
+                (item.code?.toLowerCase().includes(searchLower) || false) ||
+                // PO fields
+                (item.poNumber?.toLowerCase().includes(searchLower) || false) ||
+                (item.vendorName?.toLowerCase().includes(searchLower) || false) ||
+                // DC fields
+                (item.dcNumber?.toLowerCase().includes(searchLower) || false) ||
+                (item.customerName?.toLowerCase().includes(searchLower) || false) ||
+                // Invoice fields
+                (item.invoiceNumber?.toLowerCase().includes(searchLower) || false) ||
+                // Common fallback
+                (item.status?.toLowerCase().includes(searchLower) || false)
             );
         });
     }, [data, searchTerm, activeTab, masterTab, startDate, endDate, filterSupplier]);

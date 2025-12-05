@@ -14,7 +14,8 @@ export interface BankDetails {
     accountNumber?: string;
     ifscCode?: string;
     bankName?: string;
-    branchName?: string;
+    branch?: string;
+    accountName?: string;
 }
 
 // Item interface for transaction items (GRN, DC, PO, Billing)
@@ -122,6 +123,7 @@ export interface CompanyInfo {
     shippingAddress: string;
     qualitySpecs?: string;
     commercialTerms?: string;
+    bankDetails?: BankDetails;
 }
 
 // Inventory item interface
@@ -208,13 +210,18 @@ export interface DCFormData {
     dcNumber?: string;  // Auto-generated
     date: string;
     customerName: string;
+    customer?: string; // ID
     customerAddress?: string;
     items: Array<{
+        material: string; // ID
         materialName: string;
+        hsnCode?: string;
         quantity: number;
         unit: string;
         description?: string;
     }>;
+    discount?: number;
+    otherDetails?: string;
     status?: "Draft" | "Issued" | "Delivered";
 }
 
@@ -224,10 +231,13 @@ export interface BillingFormData {
     invoiceNumber?: string;  // Auto-generated
     date: string;
     customerName: string;
+    customer?: string; // ID
     customerAddress?: string;
     customerGST?: string;
     items: Array<{
+        material: string; // ID
         materialName: string;
+        hsnCode?: string;
         quantity: number;
         unit: string;
         rate: number;
@@ -236,8 +246,10 @@ export interface BillingFormData {
         taxAmount?: number;
     }>;
     subtotal: number;
+    discount?: number;
     taxAmount?: number;
     totalAmount: number;
+    otherDetails?: string;
     status?: "Draft" | "Sent" | "Paid";
 }
 

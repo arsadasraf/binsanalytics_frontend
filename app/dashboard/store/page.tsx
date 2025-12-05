@@ -21,7 +21,7 @@ import SuccessAlert from "@/src/components/SuccessAlert";
 import * as XLSX from 'xlsx';
 
 // Import custom types
-import { TabType, MasterType, GRNFormData, POFormData, DCFormData, BillingFormData, BillsTabType } from "./types/store.types";
+import { TabType, MasterType, GRNFormData, POFormData, DCFormData, BillingFormData } from "./types/store.types";
 
 // Import custom hook for business logic
 import { useStoreData } from "./components/hooks/useStoreData";
@@ -39,6 +39,8 @@ import POModal from "./components/POModal";
 import DCModal from "./components/DCModal";
 import BillingModal from "./components/BillingModal";
 import CompanyInfoForm from "./components/forms/CompanyInfoForm";
+import DCTable from "./components/tables/DCTable";
+import BillingTable from "./components/tables/BillingTable";
 
 /**
  * StoreContent Component
@@ -54,8 +56,7 @@ function StoreContent() {
   // State for master tab selection (vendor, customer, location, category)
   const [masterTab, setMasterTab] = useState<MasterType>("vendor");
 
-  // State for Bills tab selection
-  const [billsTab, setBillsTab] = useState<BillsTabType>("dc");
+
 
   // State for GRN modal
   const [showGRNModal, setShowGRNModal] = useState(false);
@@ -239,7 +240,13 @@ function StoreContent() {
   const handleDCEdit = (item: any) => {
     const dcData: DCFormData = {
       ...item,
-      items: item.items || [],
+      customer: item.customer?._id || item.customer, // Flatten populated customer
+      customerName: item.customerName || item.customer?.name,
+      items: item.items?.map((i: any) => ({
+        ...i,
+        material: i.material?._id || i.material, // Flatten populated material
+        materialName: i.materialName || i.material?.name
+      })) || [],
     };
     setEditingDC(dcData);
     setShowDCModal(true);
@@ -251,13 +258,70 @@ function StoreContent() {
   const handleBillingEdit = (item: any) => {
     const billingData: BillingFormData = {
       ...item,
-      items: item.items || [],
+      customer: item.customer?._id || item.customer, // Flatten populated customer
+      customerName: item.customerName || item.customer?.name,
+      items: item.items?.map((i: any) => ({
+        ...i,
+        material: i.material?._id || i.material, // Flatten populated material
+        materialName: i.materialName || i.material?.name
+      })) || [],
       subtotal: Number(item.subtotal) || 0,
       taxAmount: Number(item.taxAmount) || 0,
       totalAmount: Number(item.totalAmount) || 0,
     };
     setEditingBilling(billingData);
     setShowBillingModal(true);
+  };
+
+  /**
+   * Downloads DC data as Excel file
+   */
+  const downloadDCExcel = () => {
+    // Filter data for DCs only (should be done by useStoreData but safe to rely on `data` prop passed if activeTab is DC)
+    if (!data || data.length === 0) {
+      setError("No Delivery Challan data to export");
+      return;
+    }
+
+    const excelData = data.map((item: any) => ({
+      'DC Number': item.dcNumber,
+      'Date': new Date(item.date).toLocaleDateString(),
+      'Customer': item.customerName,
+      'Status': item.status,
+      'Items Count': item.items?.length || 0,
+      'Remarks': item.otherDetails || ''
+    }));
+
+    const worksheet = XLSX.utils.json_to_sheet(excelData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Delivery Challans');
+    XLSX.writeFile(workbook, `DC_History_${new Date().toISOString().split('T')[0]}.xlsx`);
+  };
+
+  /**
+   * Downloads Billing data as Excel file
+   */
+  const downloadBillingExcel = () => {
+    if (!data || data.length === 0) {
+      setError("No Invoice data to export");
+      return;
+    }
+
+    const excelData = data.map((item: any) => ({
+      'Invoice Number': item.invoiceNumber,
+      'Date': new Date(item.date).toLocaleDateString(),
+      'Customer': item.customerName,
+      'Subtotal': item.subtotal,
+      'Tax': item.taxAmount,
+      'Total Amount': item.totalAmount,
+      'Status': item.status,
+      'Items Count': item.items?.length || 0
+    }));
+
+    const worksheet = XLSX.utils.json_to_sheet(excelData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Invoices');
+    XLSX.writeFile(workbook, `Invoices_${new Date().toISOString().split('T')[0]}.xlsx`);
   };
 
   /**
@@ -364,7 +428,7 @@ function StoreContent() {
         {/* Bills tabs - shown when po, dc, or billing tabs are active */}
         {(activeTab === "po" || activeTab === "dc" || activeTab === "billing") && (
           <div className="mb-6">
-            <BillsTabs billsTab={billsTab} setBillsTab={setBillsTab} />
+            <BillsTabs activeTab={activeTab} />
           </div>
         )}
 
@@ -452,6 +516,15 @@ function StoreContent() {
               </svg>
               Create Delivery Challan
             </button>
+            <button
+              onClick={downloadDCExcel}
+              className="px-6 py-3 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 transition-colors flex items-center gap-2"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clipRule="evenodd" />
+              </svg>
+              Download Excel
+            </button>
           </div>
         )}
 
@@ -469,6 +542,15 @@ function StoreContent() {
                 <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" />
               </svg>
               Create Invoice
+            </button>
+            <button
+              onClick={downloadBillingExcel}
+              className="px-6 py-3 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 transition-colors flex items-center gap-2"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clipRule="evenodd" />
+              </svg>
+              Download Excel
             </button>
           </div>
         )}
@@ -501,6 +583,20 @@ function StoreContent() {
             onEdit={handlePOEdit}
             onDelete={handleDelete}
           />
+        ) : activeTab === "dc" ? (
+          <DCTable
+            data={data}
+            companyInfo={companyInfo}
+            onEdit={handleDCEdit}
+            onDelete={handleDelete}
+          />
+        ) : activeTab === "billing" ? (
+          <BillingTable
+            data={data}
+            companyInfo={companyInfo}
+            onEdit={handleBillingEdit}
+            onDelete={handleDelete}
+          />
         ) : activeTab === "masters" && masterTab === "company-info" ? (
           <CompanyInfoForm
             initialData={companyInfo}
@@ -513,11 +609,7 @@ function StoreContent() {
             masterTab={masterTab}
             data={data}
             loading={loading}
-            onEdit={
-              activeTab === "dc" ? handleDCEdit :
-                activeTab === "billing" ? handleBillingEdit :
-                  handleMasterEdit
-            }
+            onEdit={handleMasterEdit}
             onDelete={handleDelete}
           />
         )}
@@ -563,6 +655,7 @@ function StoreContent() {
           }}
           onSubmit={onDCSubmit}
           customers={customers}
+          materials={materials}
           loading={loading}
           initialData={editingDC}
           isEditing={!!editingDC}
@@ -577,6 +670,7 @@ function StoreContent() {
           }}
           onSubmit={onBillingSubmit}
           customers={customers}
+          materials={materials}
           loading={loading}
           initialData={editingBilling}
           isEditing={!!editingBilling}

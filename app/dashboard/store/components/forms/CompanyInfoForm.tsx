@@ -8,7 +8,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { Save, Upload, Building2, Phone, Mail, FileText, MapPin, Edit2 } from 'lucide-react';
+import { Save, Upload, Building2, Phone, Mail, FileText, MapPin, Edit2, CreditCard } from 'lucide-react';
 import { CompanyInfo } from '../../types/store.types';
 
 interface CompanyInfoFormProps {
@@ -30,6 +30,13 @@ export default function CompanyInfoForm({ initialData, onSubmit, loading }: Comp
         shippingAddress: '',
         qualitySpecs: '',
         commercialTerms: '',
+        bankDetails: {
+            accountName: '',
+            bankName: '',
+            accountNumber: '',
+            ifscCode: '',
+            branch: ''
+        }
     });
     const [logoFile, setLogoFile] = useState<File | null>(null);
     const [previewUrl, setPreviewUrl] = useState<string>('');
@@ -48,6 +55,17 @@ export default function CompanyInfoForm({ initialData, onSubmit, loading }: Comp
         setFormData(prev => ({ ...prev, [name]: value }));
     };
 
+    const handleBankChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const { name, value } = e.target;
+        setFormData(prev => ({
+            ...prev,
+            bankDetails: {
+                ...prev.bankDetails,
+                [name]: value
+            }
+        }));
+    };
+
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files[0]) {
             const file = e.target.files[0];
@@ -62,7 +80,11 @@ export default function CompanyInfoForm({ initialData, onSubmit, loading }: Comp
         if (logoFile) {
             const data = new FormData();
             Object.entries(formData).forEach(([key, value]) => {
-                data.append(key, value as string);
+                if (key === 'bankDetails' && value) {
+                    data.append('bankDetails', JSON.stringify(value));
+                } else {
+                    data.append(key, value as string);
+                }
             });
             data.append('logo', logoFile);
             onSubmit(data);
@@ -314,6 +336,79 @@ export default function CompanyInfoForm({ initialData, onSubmit, loading }: Comp
                                     onChange={handleChange}
                                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100 disabled:text-gray-500"
                                     placeholder="Payment terms, delivery terms..."
+                                />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Bank Details Section */}
+                <div className="col-span-1 lg:col-span-2">
+                    <div className="bg-gray-50 rounded-xl p-6 border border-gray-200">
+                        <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                            <CreditCard size={20} className="text-blue-600" />
+                            Bank Details (For Invoicing)
+                        </h3>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Bank Name</label>
+                                <input
+                                    type="text"
+                                    name="bankName"
+                                    disabled={!isEditing}
+                                    value={formData.bankDetails?.bankName || ''}
+                                    onChange={handleBankChange}
+                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100 disabled:text-gray-500"
+                                    placeholder="Bank Name"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Account Number</label>
+                                <input
+                                    type="text"
+                                    name="accountNumber"
+                                    disabled={!isEditing}
+                                    value={formData.bankDetails?.accountNumber || ''}
+                                    onChange={handleBankChange}
+                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100 disabled:text-gray-500"
+                                    placeholder="Account Number"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">IFSC Code</label>
+                                <input
+                                    type="text"
+                                    name="ifscCode"
+                                    disabled={!isEditing}
+                                    value={formData.bankDetails?.ifscCode || ''}
+                                    onChange={handleBankChange}
+                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100 disabled:text-gray-500"
+                                    placeholder="IFSC Code"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Branch Name</label>
+                                <input
+                                    type="text"
+                                    name="branch"
+                                    disabled={!isEditing}
+                                    value={formData.bankDetails?.branch || ''}
+                                    onChange={handleBankChange}
+                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100 disabled:text-gray-500"
+                                    placeholder="Branch Name"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Account Name</label>
+                                <input
+                                    type="text"
+                                    name="accountName"
+                                    disabled={!isEditing}
+                                    value={formData.bankDetails?.accountName || ''}
+                                    onChange={handleBankChange}
+                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100 disabled:text-gray-500"
+                                    placeholder="Name on Account"
                                 />
                             </div>
                         </div>

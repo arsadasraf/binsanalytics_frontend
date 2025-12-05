@@ -38,16 +38,7 @@ type NavItem = {
 const storeSubItems: NavItem[] = [
   { href: "/dashboard/store?tab=home", label: "Home", icon: Home },
   { href: "/dashboard/store?tab=material-issue", label: "Material Issue", icon: PackageMinus },
-  {
-    href: "/dashboard/store?tab=po",
-    label: "Bills",
-    icon: Receipt,
-    subItems: [
-      { href: "/dashboard/store?tab=po", label: "PO Release", icon: ShoppingCart },
-      { href: "/dashboard/store?tab=billing", label: "Billing", icon: Wallet },
-      { href: "/dashboard/store?tab=dc", label: "Delivery Challan", icon: Truck },
-    ]
-  },
+  { href: "/dashboard/store?tab=dc", label: "Bills", icon: Receipt },
   { href: "/dashboard/store?tab=masters", label: "Masters", icon: Database },
 ];
 
