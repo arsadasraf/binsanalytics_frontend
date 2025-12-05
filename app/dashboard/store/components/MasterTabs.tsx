@@ -25,6 +25,7 @@ export default function MasterTabs({ masterTab, setMasterTab }: MasterTabsProps)
         { value: "category", label: "Categories" },
         { value: "material", label: "Materials" },
         { value: "grn-history", label: "GRN History" },
+        { value: "company-info", label: "Company Info" },
     ];
 
     return (

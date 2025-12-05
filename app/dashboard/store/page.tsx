@@ -35,6 +35,7 @@ import StoreTable from "./components/tables/StoreTable";
 import POTable from "./components/tables/POTable";
 import GRNModal from "./components/GRNModal";
 import POModal from "./components/POModal";
+import CompanyInfoForm from "./components/forms/CompanyInfoForm";
 
 /**
  * StoreContent Component
@@ -92,6 +93,8 @@ function StoreContent() {
     addItem,
     updateItem,
     removeItem,
+    companyInfo,
+    saveCompanyInfo,
   } = useStoreData(activeTab, masterTab, token);
 
   /**
@@ -372,6 +375,12 @@ function StoreContent() {
             data={data}
             onEdit={handlePOEdit}
             onDelete={handleDelete}
+          />
+        ) : activeTab === "masters" && masterTab === "company-info" ? (
+          <CompanyInfoForm
+            initialData={companyInfo}
+            onSubmit={saveCompanyInfo}
+            loading={loading}
           />
         ) : (
           <StoreTable

@@ -19,7 +19,7 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { apiGet, apiPost, apiPut, apiDelete } from "@/src/lib/api";
-import { TabType, MasterType, FormData, Vendor, Customer, Location, Category, Material, GRNFormData, POFormData } from "../../types/store.types";
+import { TabType, MasterType, FormData, Vendor, Customer, Location, Category, Material, GRNFormData, POFormData, CompanyInfo } from "../../types/store.types";
 
 export function useStoreData(activeTab: TabType, masterTab: MasterType, token: string | null) {
     // ==================== State Management ====================
@@ -41,6 +41,7 @@ export function useStoreData(activeTab: TabType, masterTab: MasterType, token: s
     const [locations, setLocations] = useState<Location[]>([]);
     const [categories, setCategories] = useState<Category[]>([]);
     const [materials, setMaterials] = useState<Material[]>([]);
+    const [companyInfo, setCompanyInfo] = useState<CompanyInfo | undefined>(undefined);
 
     // Filter state
     const [startDate, setStartDate] = useState("");
@@ -87,6 +88,10 @@ export function useStoreData(activeTab: TabType, masterTab: MasterType, token: s
                     else if (masterTab === "category") endpoint = "/api/store/category";
                     else if (masterTab === "material") endpoint = "/api/store/material";
                     else if (masterTab === "grn-history") endpoint = "/api/store/grn";
+                    else if (masterTab === "company-info") {
+                        fetchCompanyInfo();
+                        return;
+                    }
                     break;
             }
 
@@ -97,6 +102,36 @@ export function useStoreData(activeTab: TabType, masterTab: MasterType, token: s
             }
         } catch (err: any) {
             setError(err.message || "Failed to load data");
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const fetchCompanyInfo = async () => {
+        if (!token) return;
+        setLoading(true);
+        try {
+            const info = await apiGet("/api/store/company-info", token);
+            setCompanyInfo(info);
+        } catch (err: any) {
+            console.error("Fetch company info error:", err);
+            // Don't set error state here to avoid blocking UI, just log it
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const saveCompanyInfo = async (info: CompanyInfo) => {
+        if (!token) return;
+        setLoading(true);
+        try {
+            const result = await apiPut("/api/store/company-info", info, token);
+            setCompanyInfo(result.info);
+            setSuccess("Company information saved successfully");
+            setTimeout(() => setSuccess(""), 3000);
+        } catch (err: any) {
+            setError(err.message || "Failed to save company information");
+            throw err;
         } finally {
             setLoading(false);
         }
@@ -471,5 +506,7 @@ export function useStoreData(activeTab: TabType, masterTab: MasterType, token: s
         addItem,
         updateItem,
         removeItem,
+        companyInfo,
+        saveCompanyInfo,
     };
 }

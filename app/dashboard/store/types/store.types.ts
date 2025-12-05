@@ -7,7 +7,7 @@
 export type TabType = "home" | "material-issue" | "grn" | "dc" | "billing" | "po" | "masters";
 
 // Master data type for master tab navigation
-export type MasterType = "vendor" | "customer" | "location" | "category" | "material" | "grn-history";
+export type MasterType = "vendor" | "customer" | "location" | "category" | "material" | "grn-history" | "company-info";
 
 // Bank Details interface for vendors and customers
 export interface BankDetails {
@@ -107,6 +107,20 @@ export interface Material {
     locationId?: string | Location; // Can be ID or populated Location object
     category?: Category;  // Populated category data (alternative field)
     location?: Location;  // Populated location data
+}
+
+export interface CompanyInfo {
+    _id?: string;
+    companyName: string;
+    contactPerson: string;
+    contactNumber: string;
+    email?: string;
+    logo?: string; // URL to Cloudinary image
+    gstNumber?: string;
+    billingAddress: string;
+    shippingAddress: string;
+    qualitySpecs?: string;
+    commercialTerms?: string;
 }
 
 // Inventory item interface
