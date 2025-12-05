@@ -3,6 +3,7 @@ import { Plus, CheckSquare, History, FileText } from 'lucide-react';
 import MaterialRequestTable from './tables/MaterialRequestTable';
 import MaterialIssueHistoryTable from './tables/MaterialIssueHistoryTable';
 import MaterialRequestModal from './modals/MaterialRequestModal';
+import MaterialRequestDetailsModal from './modals/MaterialRequestDetailsModal';
 import { useStoreData } from './hooks/useStoreData';
 
 interface MaterialIssueTabProps {
@@ -13,6 +14,7 @@ interface MaterialIssueTabProps {
 export default function MaterialIssueTab({ storeData, token }: MaterialIssueTabProps) {
     const [subTab, setSubTab] = useState<'requests' | 'history'>('requests');
     const [isRequestModalOpen, setIsRequestModalOpen] = useState(false);
+    const [viewRequest, setViewRequest] = useState<any>(null); // State for details view
 
     // Destructure needed data and handlers
     const {
@@ -54,22 +56,26 @@ export default function MaterialIssueTab({ storeData, token }: MaterialIssueTabP
         try {
             // Transform request to issue
             const issueData = {
-                issueNumber: `ISS-${request.requestNumber.split('-')[1]}`, // Generate or Auto
-                department: request.department,
+                issueNumber: request.requestNumber.replace('REQ', 'ISS'),
+                department: request.department || 'General', // Fallback
                 issuedTo: request.requestedBy?._id, // Issue to requester
                 items: request.items.map((item: any) => ({
-                    material: item.material, // ID
+                    material: item.material || item._id, // Ensure ID
                     materialName: item.materialName,
+                    materialCode: item.materialCode,
                     quantity: item.quantity, // Default to requested quantity
                     unit: item.unit,
                     purpose: item.purpose
                 })),
                 date: new Date().toISOString(),
                 status: 'Issued',
-                requestId: request._id // Link to update request status
             };
 
             await createMaterialIssue(issueData);
+
+            // Link to update request status
+            await updateMaterialRequest(request._id, { status: 'Issued' });
+
         } catch (error) {
             console.error("Issue failed", error);
             alert("Failed to issue material. Check stock or try again.");
@@ -84,8 +90,8 @@ export default function MaterialIssueTab({ storeData, token }: MaterialIssueTabP
                     <button
                         onClick={() => setSubTab('requests')}
                         className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all ${subTab === 'requests'
-                                ? 'bg-white text-blue-600 shadow-sm'
-                                : 'text-gray-600 hover:text-gray-900'
+                            ? 'bg-white text-blue-600 shadow-sm'
+                            : 'text-gray-600 hover:text-gray-900'
                             }`}
                     >
                         <CheckSquare size={16} />
@@ -99,8 +105,8 @@ export default function MaterialIssueTab({ storeData, token }: MaterialIssueTabP
                     <button
                         onClick={() => setSubTab('history')}
                         className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all ${subTab === 'history'
-                                ? 'bg-white text-blue-600 shadow-sm'
-                                : 'text-gray-600 hover:text-gray-900'
+                            ? 'bg-white text-blue-600 shadow-sm'
+                            : 'text-gray-600 hover:text-gray-900'
                             }`}
                     >
                         <History size={16} />
@@ -126,6 +132,7 @@ export default function MaterialIssueTab({ storeData, token }: MaterialIssueTabP
                         requests={pendingRequests}
                         onIssue={handleIssueRequest}
                         onReject={handleRejectRequest}
+                        onView={(req) => setViewRequest(req)}
                     />
                 ) : (
                     <MaterialIssueHistoryTable issues={issueHistory} />
@@ -139,6 +146,12 @@ export default function MaterialIssueTab({ storeData, token }: MaterialIssueTabP
                 onSubmit={handleCreateRequest}
                 materials={materials}
                 loading={loading}
+            />
+
+            <MaterialRequestDetailsModal
+                isOpen={!!viewRequest}
+                onClose={() => setViewRequest(null)}
+                request={viewRequest}
             />
         </div>
     );

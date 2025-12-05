@@ -109,10 +109,13 @@ export default function ResponsiveDashboardLayout({ children }: { children: Reac
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const router = useRouter();
+
+  // State
   const [navItems, setNavItems] = useState<NavItem[]>(fallbackNav);
   const [userName, setUserName] = useState("BinsAnalytics");
   const [userSubtitle, setUserSubtitle] = useState("Dashboard");
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+  const [desktopSidebarOpen, setDesktopSidebarOpen] = useState(true); // New state for desktop toggle
   const [storeMenuOpen, setStoreMenuOpen] = useState(false);
   const [ppcMenuOpen, setPpcMenuOpen] = useState(false);
 
@@ -191,6 +194,7 @@ export default function ResponsiveDashboardLayout({ children }: { children: Reac
 
   const [mobileMoreOpen, setMobileMoreOpen] = useState(false);
 
+  // Re-added renderNavLink function
   const renderNavLink = (item: NavItem, isMobile = false, isSubItem = false) => {
     const Icon = item.icon;
     // Check active state
@@ -255,9 +259,9 @@ export default function ResponsiveDashboardLayout({ children }: { children: Reac
         >
           <div className="flex items-center gap-3">
             <Icon size={isSubItem ? 16 : 18} className={isActive && !hasSubItems ? "text-indigo-600" : "text-gray-500 group-hover:text-indigo-500"} />
-            <span>{item.label}</span>
+            <span className={desktopSidebarOpen ? "" : "hidden"}>{item.label}</span>
           </div>
-          {hasSubItems && (
+          {hasSubItems && desktopSidebarOpen && (
             <div onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
@@ -272,7 +276,7 @@ export default function ResponsiveDashboardLayout({ children }: { children: Reac
           )}
         </Link>
         {/* Render Sub-items */}
-        {hasSubItems && isExpanded && (
+        {hasSubItems && isExpanded && desktopSidebarOpen && (
           <div className="mt-1 flex flex-col gap-1">
             {item.subItems!.map(sub => renderNavLink(sub, false, true))}
           </div>
@@ -284,13 +288,16 @@ export default function ResponsiveDashboardLayout({ children }: { children: Reac
   return (
     <div className="flex h-screen bg-gray-50">
       {/* Desktop Sidebar */}
-      <aside className="hidden lg:flex flex-col w-64 bg-white border-r border-gray-100 shadow-sm">
-        <div className="p-6 border-b border-gray-50">
+      <aside
+        className={`hidden lg:flex flex-col bg-white border-r border-gray-100 shadow-sm transition-all duration-300 ease-in-out ${desktopSidebarOpen ? "w-64" : "w-20"
+          }`}
+      >
+        <div className={`p-6 border-b border-gray-50 ${desktopSidebarOpen ? "" : "flex justify-center p-4"}`}>
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center">
+            <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center shrink-0">
               <span className="text-white font-bold">B</span>
             </div>
-            <span className="font-bold text-xl text-gray-900">BinsAnalytics</span>
+            {desktopSidebarOpen && <span className="font-bold text-xl text-gray-900">BinsAnalytics</span>}
           </div>
         </div>
 
@@ -299,27 +306,52 @@ export default function ResponsiveDashboardLayout({ children }: { children: Reac
         </div>
 
         <div className="p-4 border-t border-gray-50">
-          <div className="flex items-center gap-3 px-3 py-3 rounded-xl bg-gray-50 mb-2">
-            <div className="w-8 h-8 bg-indigo-100 rounded-full flex items-center justify-center text-indigo-600 font-bold">
-              {userName.charAt(0)}
+          {desktopSidebarOpen ? (
+            <div className="flex items-center gap-3 px-3 py-3 rounded-xl bg-gray-50 mb-2">
+              <div className="w-8 h-8 bg-indigo-100 rounded-full flex items-center justify-center text-indigo-600 font-bold">
+                {userName.charAt(0)}
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium text-gray-900 truncate">{userName}</p>
+                <p className="text-xs text-gray-500 truncate">{userSubtitle}</p>
+              </div>
             </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-gray-900 truncate">{userName}</p>
-              <p className="text-xs text-gray-500 truncate">{userSubtitle}</p>
+          ) : (
+            <div className="flex justify-center mb-4">
+              <div className="w-8 h-8 bg-indigo-100 rounded-full flex items-center justify-center text-indigo-600 font-bold" title={userName}>
+                {userName.charAt(0)}
+              </div>
             </div>
-          </div>
+          )}
+
           <button
             onClick={handleLogout}
-            className="w-full flex items-center gap-3 px-3 py-2 text-sm font-medium text-red-600 hover:bg-red-50 rounded-xl transition-colors"
+            className={`w-full flex items-center ${desktopSidebarOpen ? "gap-3 px-3" : "justify-center"} py-2 text-sm font-medium text-red-600 hover:bg-red-50 rounded-xl transition-colors`}
+            title="Sign Out"
           >
             <LogOut size={18} />
-            <span>Sign Out</span>
+            {desktopSidebarOpen && <span>Sign Out</span>}
           </button>
         </div>
       </aside>
 
       {/* Mobile Header & Content */}
       <div className="flex-1 flex flex-col min-w-0">
+        {/* Desktop Collapse Button */}
+        <div className="hidden lg:flex items-center px-4 py-3 bg-white border-b border-gray-100 sticky top-0 z-10">
+          <button
+            onClick={() => setDesktopSidebarOpen(!desktopSidebarOpen)}
+            className="p-2 text-gray-500 hover:bg-gray-100 rounded-lg transition-colors mr-3"
+            title={desktopSidebarOpen ? "Collapse Sidebar" : "Expand Sidebar"}
+          >
+            <Menu size={20} />
+          </button>
+          {/* Breadcrumb or Helper */}
+          <div className="text-sm font-medium text-gray-500">
+            {pathname?.split('/').slice(1).map(p => p.charAt(0).toUpperCase() + p.slice(1)).join(' / ')}
+          </div>
+        </div>
+
         {/* Mobile Header */}
         <header className="lg:hidden bg-white border-b border-gray-100 px-4 py-3 flex items-center justify-between sticky top-0 z-20">
           <div className="flex items-center gap-3">
@@ -410,7 +442,6 @@ export default function ResponsiveDashboardLayout({ children }: { children: Reac
                     <item.icon size={20} />
                     {item.label}
                   </Link>
-                  {/* Render sub-items in mobile drawer if needed, but usually bottom nav handles store sub-items */}
                 </div>
               ))}
             </div>

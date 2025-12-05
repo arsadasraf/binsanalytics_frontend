@@ -21,9 +21,7 @@ export default function MaterialRequestModal({
 }: MaterialRequestModalProps) {
     const [formData, setFormData] = useState({
         requestNumber: "",
-        department: "",
-        priority: "Medium",
-        items: [{ material: "", materialName: "", quantity: 1, unit: "PCS", purpose: "" }]
+        items: [{ material: "", materialName: "", materialCode: "", quantity: 1, unit: "PCS", purpose: "" }]
     });
 
     const generateRequestNumber = () => {
@@ -36,9 +34,7 @@ export default function MaterialRequestModal({
         if (isOpen) {
             setFormData({
                 requestNumber: generateRequestNumber(),
-                department: "",
-                priority: "Medium",
-                items: [{ material: "", materialName: "", quantity: 1, unit: "PCS", purpose: "" }]
+                items: [{ material: "", materialName: "", materialCode: "", quantity: 1, unit: "PCS", purpose: "" }]
             });
         }
     }, [isOpen]);
@@ -65,7 +61,7 @@ export default function MaterialRequestModal({
     const addItem = () => {
         setFormData({
             ...formData,
-            items: [...formData.items, { material: "", materialName: "", quantity: 1, unit: "PCS", purpose: "" }]
+            items: [...formData.items, { material: "", materialName: "", materialCode: "", quantity: 1, unit: "PCS", purpose: "" }]
         });
     };
 
@@ -90,34 +86,6 @@ export default function MaterialRequestModal({
                 </div>
 
                 <div className="p-6 space-y-6">
-                    {/* Header Fields */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">Department</label>
-                            <input
-                                type="text"
-                                value={formData.department}
-                                onChange={(e) => setFormData({ ...formData, department: e.target.value })}
-                                className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
-                                placeholder="e.g. Production, Maintenance"
-                                required
-                            />
-                        </div>
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">Priority</label>
-                            <select
-                                value={formData.priority}
-                                onChange={(e) => setFormData({ ...formData, priority: e.target.value })}
-                                className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
-                            >
-                                <option value="Low">Low</option>
-                                <option value="Medium">Medium</option>
-                                <option value="High">High</option>
-                                <option value="Urgent">Urgent</option>
-                            </select>
-                        </div>
-                    </div>
-
                     {/* Items Section */}
                     <div>
                         <div className="flex justify-between items-center mb-4">
