@@ -18,6 +18,7 @@ import { useSearchParams } from "next/navigation";
 import LoadingSpinner from "@/src/components/LoadingSpinner";
 import ErrorAlert from "@/src/components/ErrorAlert";
 import SuccessAlert from "@/src/components/SuccessAlert";
+import * as XLSX from 'xlsx';
 
 // Import custom types
 import { TabType, MasterType, GRNFormData } from "./types/store.types";
@@ -129,6 +130,90 @@ function StoreContent() {
     }
   };
 
+  /**
+   * Downloads inventory data as Excel file
+   */
+  const downloadInventoryExcel = async () => {
+    try {
+      if (!token) {
+        setError("Authentication required");
+        return;
+      }
+
+      // Use API base URL with fallback
+      const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+
+      // Fetch inventory data from API
+      const response = await fetch(`${API_BASE_URL}/api/store/inventory`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch inventory data');
+      }
+
+      const result = await response.json();
+      const inventoryData = result.inventory || [];
+
+      if (inventoryData.length === 0) {
+        setError("No inventory data available to export");
+        return;
+      }
+
+      // Prepare data for Excel
+      const excelData = inventoryData.map((item: any) => ({
+        'Material Code': item.materialCode || '',
+        'Material Name': item.materialName || '',
+        'Category': item.categoryId?.name || 'N/A',
+        'Unit': item.unit || '',
+        'Current Stock': item.currentStock || 0,
+        'Location': item.locationId?.name || item.location || 'N/A',
+        'Reorder Level': item.reorderLevel || 0,
+        'Reorder Quantity': item.reorderQuantity || 0,
+        'Unit Price': item.unitPrice || 0,
+        'Total Value': (item.currentStock || 0) * (item.unitPrice || 0),
+      }));
+
+      // Create worksheet
+      const worksheet = XLSX.utils.json_to_sheet(excelData);
+
+      // Set column widths
+      const columnWidths = [
+        { wch: 15 }, // Material Code
+        { wch: 25 }, // Material Name
+        { wch: 15 }, // Category
+        { wch: 10 }, // Unit
+        { wch: 15 }, // Current Stock
+        { wch: 20 }, // Location
+        { wch: 15 }, // Reorder Level
+        { wch: 18 }, // Reorder Quantity
+        { wch: 12 }, // Unit Price
+        { wch: 15 }, // Total Value
+      ];
+      worksheet['!cols'] = columnWidths;
+
+      // Create workbook
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, 'Inventory');
+
+      // Generate filename with current date
+      const today = new Date();
+      const dateStr = today.toISOString().split('T')[0];
+      const filename = `Inventory_${dateStr}.xlsx`;
+
+      // Download file
+      XLSX.writeFile(workbook, filename);
+
+      setSuccess("Inventory data exported successfully");
+    } catch (err: any) {
+      console.error('Error downloading inventory:', err);
+      setError(err.message || "Failed to export inventory data");
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 pb-24 sm:pb-8">
       <div className="p-4 sm:p-6 max-w-7xl mx-auto">
@@ -167,9 +252,9 @@ function StoreContent() {
           </div>
         )}
 
-        {/* Create GRN button - only shown in home tab */}
+        {/* Create GRN button and Download Excel button - only shown in home tab */}
         {activeTab === "home" && (
-          <div className="mb-6">
+          <div className="mb-6 flex flex-wrap gap-3">
             <button
               onClick={() => {
                 setEditingGRN(undefined);
@@ -181,6 +266,16 @@ function StoreContent() {
                 <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" />
               </svg>
               Create GRN
+            </button>
+
+            <button
+              onClick={downloadInventoryExcel}
+              className="p-3 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 transition-colors flex items-center gap-2"
+              title="Download Inventory Excel"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clipRule="evenodd" />
+              </svg>
             </button>
           </div>
         )}
