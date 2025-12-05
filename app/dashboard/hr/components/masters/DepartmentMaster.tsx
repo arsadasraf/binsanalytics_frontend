@@ -107,26 +107,26 @@ export default function DepartmentMaster() {
 
     return (
         <div className="space-y-4">
-            <div className="flex justify-between items-center bg-white p-4 rounded-xl shadow-sm border border-gray-100">
-                <div className="relative w-64">
+            <div className="flex flex-row justify-between items-center bg-white p-4 rounded-xl shadow-sm border border-gray-100 gap-3 md:gap-4">
+                <div className="relative flex-1 md:flex-none md:w-64">
                     <Search
                         className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
                         size={18}
                     />
                     <input
                         type="text"
-                        placeholder="Search departments..."
+                        placeholder="Search..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
-                        className="w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        className="w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
                     />
                 </div>
                 <button
                     onClick={handleOpenAdd}
-                    className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                    className="flex-none flex items-center justify-center gap-2 px-3 md:px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
                 >
                     <Plus size={18} />
-                    Add Department
+                    <span className="hidden md:inline">Add Department</span>
                 </button>
             </div>
 
