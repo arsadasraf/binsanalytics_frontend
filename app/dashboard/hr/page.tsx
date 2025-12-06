@@ -3,6 +3,7 @@
 import { useSearchParams } from "next/navigation";
 import { useState, Suspense } from "react";
 import HRTabs from "./components/HRTabs";
+import HRHomeTab from "./components/HRHomeTab";
 import DepartmentMaster from "./components/masters/DepartmentMaster";
 import DesignationMaster from "./components/masters/DesignationMaster";
 import EmployeeMaster from "./components/masters/EmployeeMaster";
@@ -21,7 +22,7 @@ function HRPageContent() {
   const [activeMasterTab, setActiveMasterTab] = useState<"department" | "designation" | "employee" | "skills" | "face-data">("department");
 
   return (
-    <div className="p-6">
+    <div className="p-6 pb-24 md:pb-6">
       <div className="flex flex-col gap-2 mb-6">
         <h1 className="text-2xl font-bold text-gray-900">HR Dashboard</h1>
         <p className="text-gray-500">Manage employees, departments, and attendance</p>
@@ -30,13 +31,7 @@ function HRPageContent() {
       <HRTabs activeTab={activeTab} />
 
       <div className="mt-6">
-        {activeTab === "home" && (
-          <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-            <h2 className="text-lg font-semibold mb-4">Welcome to HR Management</h2>
-            <p className="text-gray-600">Overview and metrics will appear here.</p>
-            {/* Future charts/stats can go here */}
-          </div>
-        )}
+        {activeTab === "home" && <HRHomeTab />}
 
         {activeTab === "master" && (
           <div className="space-y-6">

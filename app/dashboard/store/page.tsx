@@ -446,174 +446,163 @@ function StoreContent() {
             <BillsTabs activeTab={activeTab} />
           </div>
         )}
-
-        {/* Toolbar: Search, Filters, Actions */}
-        <div className="mb-6 flex flex-col lg:flex-row gap-4 items-start lg:items-center justify-between bg-white p-4 rounded-xl shadow-sm border border-gray-100">
-
-          {/* Left Side: Search & Filter */}
-          <div className="flex flex-col sm:flex-row gap-4 w-full lg:w-auto flex-1">
-            <div className="w-full sm:w-64">
-              <SearchBar searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
-            </div>
-
-            {/* Date Filter */}
-            {(activeTab === "dc" || activeTab === "billing" || activeTab === "po" || activeTab === "grn") && (
-              <div className="flex items-center gap-2 bg-gray-50 p-1 rounded-lg border border-gray-200">
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                    </svg>
-                  </div>
-                  <input
-                    type="date"
-                    value={startDate}
-                    onChange={(e) => setStartDate(e.target.value)}
-                    className="pl-9 pr-3 py-2 bg-transparent border-none focus:ring-0 text-sm text-gray-700 w-32 placeholder-gray-400"
-                    placeholder="Start Date"
-                  />
-                </div>
-                <span className="text-gray-400">-</span>
-                <div className="relative">
-                  <input
-                    type="date"
-                    value={endDate}
-                    onChange={(e) => setEndDate(e.target.value)}
-                    className="px-3 py-2 bg-transparent border-none focus:ring-0 text-sm text-gray-700 w-32"
-                    placeholder="End Date"
-                  />
-                </div>
-                {(startDate || endDate) && (
-                  <button
-                    onClick={() => { setStartDate(''); setEndDate(''); }}
-                    className="p-1 hover:bg-gray-200 rounded-full text-gray-400 hover:text-red-500 transition-colors mr-1"
-                    title="Clear Dates"
-                  >
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-                      <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
-                    </svg>
-                  </button>
-                )}
+        {(activeTab === "dc" || activeTab === "billing" || activeTab === "po" || activeTab === "grn") && (
+          <div className="flex items-center gap-2 bg-gray-50 p-1 rounded-lg border border-gray-200">
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
               </div>
+              <input
+                type="date"
+                value={startDate}
+                onChange={(e) => setStartDate(e.target.value)}
+                className="pl-9 pr-3 py-2 bg-transparent border-none focus:ring-0 text-sm text-gray-700 w-32 placeholder-gray-400"
+                placeholder="Start Date"
+              />
+            </div>
+            <span className="text-gray-400">-</span>
+            <div className="relative">
+              <input
+                type="date"
+                value={endDate}
+                onChange={(e) => setEndDate(e.target.value)}
+                className="px-3 py-2 bg-transparent border-none focus:ring-0 text-sm text-gray-700 w-32"
+                placeholder="End Date"
+              />
+            </div>
+            {(startDate || endDate) && (
+              <button
+                onClick={() => { setStartDate(''); setEndDate(''); }}
+                className="p-1 hover:bg-gray-200 rounded-full text-gray-400 hover:text-red-500 transition-colors mr-1"
+                title="Clear Dates"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                </svg>
+              </button>
             )}
           </div>
+        )}
 
-          {/* Right Side: Actions (Create & Download) */}
-          <div className="flex gap-3 w-full lg:w-auto justify-end">
-            {/* DC Buttons */}
-            {activeTab === "dc" && (
-              <>
-                <button
-                  onClick={downloadDCExcel}
-                  className="p-2.5 bg-emerald-50 text-emerald-600 border border-emerald-200 rounded-lg hover:bg-emerald-100 transition-colors flex items-center justify-center gap-2"
-                  title="Download List as Excel"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                    <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clipRule="evenodd" />
-                  </svg>
-                </button>
-                <button
-                  onClick={() => {
-                    setEditingDC(undefined);
-                    setShowDCModal(true);
-                  }}
-                  className="px-4 py-2.5 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-shadow shadow-sm shadow-blue-200 flex items-center gap-2"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                    <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" />
-                  </svg>
-                  Create DC
-                </button>
-              </>
-            )}
 
-            {/* Billing Buttons */}
-            {activeTab === "billing" && (
-              <>
-                <button
-                  onClick={downloadBillingExcel}
-                  className="p-2.5 bg-emerald-50 text-emerald-600 border border-emerald-200 rounded-lg hover:bg-emerald-100 transition-colors flex items-center justify-center gap-2"
-                  title="Download List as Excel"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                    <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clipRule="evenodd" />
-                  </svg>
-                </button>
-                <button
-                  onClick={() => {
-                    setEditingBilling(undefined);
-                    setShowBillingModal(true);
-                  }}
-                  className="px-4 py-2.5 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700 transition-shadow shadow-sm shadow-indigo-200 flex items-center gap-2"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                    <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" />
-                  </svg>
-                  Create Invoice
-                </button>
-              </>
-            )}
-
-            {/* PO Button */}
-            {activeTab === "po" && (
+        {/* Right Side: Actions (Create & Download) */}
+        <div className="flex gap-3 w-full lg:w-auto justify-end">
+          {/* DC Buttons */}
+          {activeTab === "dc" && (
+            <>
+              <button
+                onClick={downloadDCExcel}
+                className="p-2.5 bg-emerald-50 text-emerald-600 border border-emerald-200 rounded-lg hover:bg-emerald-100 transition-colors flex items-center justify-center gap-2"
+                title="Download List as Excel"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clipRule="evenodd" />
+                </svg>
+              </button>
               <button
                 onClick={() => {
-                  setEditingPO(undefined);
-                  setShowPOModal(true);
+                  setEditingDC(undefined);
+                  setShowDCModal(true);
                 }}
-                className="px-4 py-2.5 bg-purple-600 text-white rounded-lg font-medium hover:bg-purple-700 transition-shadow shadow-sm shadow-purple-200 flex items-center gap-2"
+                className="px-4 py-2.5 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-shadow shadow-sm shadow-blue-200 flex items-center gap-2"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                   <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" />
                 </svg>
-                Create PO
+                Create DC
               </button>
-            )}
+            </>
+          )}
 
-            {/* GRN Buttons */}
-            {activeTab === "home" && (
-              <>
-                <button
-                  onClick={() => {
-                    setEditingGRN(undefined);
-                    setShowGRNModal(true);
-                  }}
-                  className="px-4 py-2.5 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700 transition-shadow shadow-sm shadow-indigo-200 flex items-center gap-2"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                    <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" />
-                  </svg>
-                  Create GRN
-                </button>
-                <button
-                  onClick={downloadInventoryExcel}
-                  className="p-2.5 bg-emerald-50 text-emerald-600 border border-emerald-200 rounded-lg hover:bg-emerald-100 transition-colors flex items-center justify-center gap-2"
-                  title="Download Inventory Excel"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                    <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clipRule="evenodd" />
-                  </svg>
-                </button>
-              </>
-            )}
-
-            {/* Masters Button */}
-            {activeTab === "masters" && (
+          {/* Billing Buttons */}
+          {activeTab === "billing" && (
+            <>
+              <button
+                onClick={downloadBillingExcel}
+                className="p-2.5 bg-emerald-50 text-emerald-600 border border-emerald-200 rounded-lg hover:bg-emerald-100 transition-colors flex items-center justify-center gap-2"
+                title="Download List as Excel"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clipRule="evenodd" />
+                </svg>
+              </button>
               <button
                 onClick={() => {
-                  setFormData({ items: [] });
-                  setShowForm(true);
+                  setEditingBilling(undefined);
+                  setShowBillingModal(true);
                 }}
                 className="px-4 py-2.5 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700 transition-shadow shadow-sm shadow-indigo-200 flex items-center gap-2"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                   <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" />
                 </svg>
-                Create New
+                Create Invoice
               </button>
-            )}
-          </div>
+            </>
+          )}
+
+          {/* PO Button */}
+          {activeTab === "po" && (
+            <button
+              onClick={() => {
+                setEditingPO(undefined);
+                setShowPOModal(true);
+              }}
+              className="px-4 py-2.5 bg-purple-600 text-white rounded-lg font-medium hover:bg-purple-700 transition-shadow shadow-sm shadow-purple-200 flex items-center gap-2"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" />
+              </svg>
+              Create PO
+            </button>
+          )}
+
+          {/* GRN Buttons */}
+          {activeTab === "home" && (
+            <>
+              <button
+                onClick={() => {
+                  setEditingGRN(undefined);
+                  setShowGRNModal(true);
+                }}
+                className="px-4 py-2.5 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700 transition-shadow shadow-sm shadow-indigo-200 flex items-center gap-2"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" />
+                </svg>
+                Create GRN
+              </button>
+              <button
+                onClick={downloadInventoryExcel}
+                className="p-2.5 bg-emerald-50 text-emerald-600 border border-emerald-200 rounded-lg hover:bg-emerald-100 transition-colors flex items-center justify-center gap-2"
+                title="Download Inventory Excel"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clipRule="evenodd" />
+                </svg>
+              </button>
+            </>
+          )}
+
+          {/* Masters Button */}
+          {activeTab === "masters" && (
+            <button
+              onClick={() => {
+                setFormData({ items: [] });
+                setShowForm(true);
+              }}
+              className="px-4 py-2.5 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700 transition-shadow shadow-sm shadow-indigo-200 flex items-center gap-2"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" />
+              </svg>
+              Create New
+            </button>
+          )}
         </div>
+
 
         {/* Store Form */}
         <StoreForm
@@ -636,54 +625,56 @@ function StoreContent() {
         />
 
         {/* Table for displaying data */}
-        {activeTab === "po" ? (
-          <POTable
-            data={data}
-            companyInfo={companyInfo}
-            onEdit={handlePOEdit}
-            onDelete={handleDelete}
-          />
-        ) : activeTab === "dc" ? (
-          <DCTable
-            data={data}
-            companyInfo={companyInfo}
-            onEdit={handleDCEdit}
-            onDelete={handleDelete}
-          />
-        ) : activeTab === "billing" ? (
-          <BillingTable
-            data={data}
-            companyInfo={companyInfo}
-            onEdit={handleBillingEdit}
-            onDelete={handleDelete}
-          />
-        ) : activeTab === "masters" && masterTab === "company-info" ? (
-          <CompanyInfoForm
-            initialData={companyInfo}
-            onSubmit={saveCompanyInfo}
-            loading={loading}
-          />
-        ) : activeTab === "material-issue" ? (
-          <MaterialIssueTab storeData={{
-            data,
-            materialRequests,
-            createMaterialRequest,
-            updateMaterialRequest,
-            createMaterialIssue,
-            updateMaterialIssue,
-            materials,
-            loading,
-          }} token={token} />
-        ) : (
-          <StoreTable
-            activeTab={activeTab}
-            masterTab={masterTab}
-            data={data}
-            loading={loading}
-            onEdit={handleMasterEdit}
-            onDelete={handleDelete}
-          />
-        )}
+        {
+          activeTab === "po" ? (
+            <POTable
+              data={data}
+              companyInfo={companyInfo}
+              onEdit={handlePOEdit}
+              onDelete={handleDelete}
+            />
+          ) : activeTab === "dc" ? (
+            <DCTable
+              data={data}
+              companyInfo={companyInfo}
+              onEdit={handleDCEdit}
+              onDelete={handleDelete}
+            />
+          ) : activeTab === "billing" ? (
+            <BillingTable
+              data={data}
+              companyInfo={companyInfo}
+              onEdit={handleBillingEdit}
+              onDelete={handleDelete}
+            />
+          ) : activeTab === "masters" && masterTab === "company-info" ? (
+            <CompanyInfoForm
+              initialData={companyInfo}
+              onSubmit={saveCompanyInfo}
+              loading={loading}
+            />
+          ) : activeTab === "material-issue" ? (
+            <MaterialIssueTab storeData={{
+              data,
+              materialRequests,
+              createMaterialRequest,
+              updateMaterialRequest,
+              createMaterialIssue,
+              updateMaterialIssue,
+              materials,
+              loading,
+            }} token={token} />
+          ) : (
+            <StoreTable
+              activeTab={activeTab}
+              masterTab={masterTab}
+              data={data}
+              loading={loading}
+              onEdit={handleMasterEdit}
+              onDelete={handleDelete}
+            />
+          )
+        }
 
         {/* GRN Modal */}
         <GRNModal
@@ -746,24 +737,25 @@ function StoreContent() {
           initialData={editingBilling}
           isEditing={!!editingBilling}
         />
+
       </div>
 
       {/* Global styles for input fields */}
       <style jsx>{`
-        :global(.input-field) {
-          width: 100%;
-          padding: 0.75rem 1rem;
-          background-color: #f9fafb;
-          border: 1px solid #e5e7eb;
-          border-radius: 0.75rem;
-          transition: all 0.2s;
-        }
-        :global(.input-field:focus) {
-          outline: none;
-          border-color: #6366f1;
-          box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.1);
-        }
-      `}</style>
+          :global(.input-field) {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            background-color: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 0.75rem;
+            transition: all 0.2s;
+          }
+          :global(.input-field:focus) {
+            outline: none;
+            border-color: #6366f1;
+            box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.1);
+          }
+        `}</style>
     </div>
   );
 }
