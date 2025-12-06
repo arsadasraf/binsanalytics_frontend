@@ -32,6 +32,10 @@ export default function MaterialRequestModal({
         return `REQ-${timeStr}`;
     };
 
+    console.log("MaterialRequestModal Debug:", { materialsLen: materials.length, inventoryLen: inventoryList.length });
+    // console.log("First Material:", materials[0]);
+    // console.log("First Inventory:", inventoryList[0]);
+
     useEffect(() => {
         if (isOpen) {
             setFormData({
@@ -80,7 +84,9 @@ export default function MaterialRequestModal({
                 <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50/50 sticky top-0 z-10 backdrop-blur-md">
                     <div>
                         <h2 className="text-xl font-bold text-gray-800">New Material Request</h2>
-                        <p className="text-sm text-gray-500 mt-1">Request Number: {formData.requestNumber}</p>
+                        <p className="text-sm text-gray-500 mt-1">
+                            Request Number: {formData.requestNumber} | Inv Loaded: {inventoryList.length}
+                        </p>
                     </div>
                     <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-500">
                         <X size={20} />
@@ -88,6 +94,15 @@ export default function MaterialRequestModal({
                 </div>
 
                 <div className="p-6 space-y-6">
+                    <details className="mb-4 p-2 bg-yellow-50 text-xs rounded border border-yellow-200">
+                        <summary className="cursor-pointer font-medium text-yellow-800">Debug Inventory Data (Click to expand)</summary>
+                        <pre className="mt-2 whitespace-pre-wrap text-gray-800">
+                            {inventoryList.length > 0
+                                ? JSON.stringify(inventoryList[0], null, 2)
+                                : "No inventory data loaded"}
+                        </pre>
+                    </details>
+
                     {/* Items Section */}
                     <div>
                         <div className="flex justify-between items-center mb-4">
@@ -114,7 +129,11 @@ export default function MaterialRequestModal({
                                         >
                                             <option value="">Select Material</option>
                                             {materials.map((m) => {
-                                                const stockItem = inventoryList.find((inv: any) => inv.materialName === m.name || inv.materialCode === m.code);
+                                                const stockItem = inventoryList.find((inv: any) =>
+                                                    (inv.materialId === m._id) ||
+                                                    (inv.materialCode && m.code && inv.materialCode.toString().trim().toLowerCase() === m.code.toString().trim().toLowerCase()) ||
+                                                    (inv.materialName && m.name && inv.materialName.toString().trim().toLowerCase() === m.name.toString().trim().toLowerCase())
+                                                );
                                                 const stock = stockItem ? stockItem.currentStock : 0;
                                                 const unit = stockItem?.unit || (m as any).unit || "PCS";
 
