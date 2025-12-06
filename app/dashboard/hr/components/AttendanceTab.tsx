@@ -26,9 +26,17 @@ export default function AttendanceTab() {
             const formData = new FormData();
             formData.append("file", blob, "capture.jpg");
 
-            const token = localStorage.getItem("token");
+            const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+            if (!token) {
+                console.error("No authentication token found");
+                setLastScanResult({ status: "error", message: "Authentication failed. Please login again." });
+                return;
+            }
+
+            const apiUrl = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000") + "/api/hr/mark-attendance";
+
             const response = await axios.post(
-                `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/api/hr/mark-attendance`,
+                apiUrl,
                 formData,
                 {
                     headers: {
@@ -100,10 +108,10 @@ export default function AttendanceTab() {
                 {/* Feedback Overlay */}
                 {lastScanResult && (
                     <div className={`absolute top-10 left-1/2 -translate-x-1/2 px-8 py-4 rounded-xl shadow-2xl backdrop-blur-md border-2 animate-in fade-in slide-in-from-top-4 duration-300 flex items-center gap-4 ${lastScanResult.status === "success"
-                            ? "bg-green-500/90 border-green-400 text-white"
-                            : lastScanResult.status === "warning"
-                                ? "bg-yellow-500/90 border-yellow-400 text-white"
-                                : "bg-red-500/90 border-red-400 text-white"
+                        ? "bg-green-500/90 border-green-400 text-white"
+                        : lastScanResult.status === "warning"
+                            ? "bg-yellow-500/90 border-yellow-400 text-white"
+                            : "bg-red-500/90 border-red-400 text-white"
                         }`}>
                         <div className="p-2 bg-white/20 rounded-full">
                             {lastScanResult.status === "success" ? <UserCheck size={32} /> :

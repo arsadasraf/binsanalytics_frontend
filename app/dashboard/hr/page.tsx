@@ -9,11 +9,12 @@ import EmployeeMaster from "./components/masters/EmployeeMaster";
 import SkillMaster from "./components/masters/SkillMaster";
 import FaceDataMaster from "./components/masters/FaceDataMaster";
 import AttendanceTab from "./components/AttendanceTab";
+import PresentTab from "./components/PresentTab";
 import LoadingSpinner from "@/src/components/LoadingSpinner";
 
 function HRPageContent() {
   const searchParams = useSearchParams();
-  const activeTab = (searchParams.get("tab") as "home" | "master" | "attendance") || "home";
+  const activeTab = (searchParams.get("tab") as "home" | "master" | "attendance" | "present") || "home";
 
   // State for Master sub-tabs
   const [activeMasterTab, setActiveMasterTab] = useState<"department" | "designation" | "employee" | "skills" | "face-data">("department");
@@ -98,9 +99,8 @@ function HRPageContent() {
           </div>
         )}
 
-        {activeTab === "attendance" && (
-          <AttendanceTab />
-        )}
+        {activeTab === "attendance" && <AttendanceTab />}
+        {activeTab === "present" && <PresentTab />}
       </div>
     </div>
   );

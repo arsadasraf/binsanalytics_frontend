@@ -3,41 +3,57 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import Webcam from "react-webcam";
 import axios from "axios";
-import { Camera, Trash2, Save, User, Check, RefreshCw } from "lucide-react";
+import { Camera, Trash2, Save, User, Check, RefreshCw, Search, Plus, ArrowLeft } from "lucide-react";
+import LoadingSpinner from "@/src/components/LoadingSpinner";
 
 interface Employee {
     _id: string;
     firstName: string;
     lastName: string;
     employeeId: string;
+    department: string;
+    photo?: string;
+    faceEncoding?: string; // "Active" if data exists
 }
 
 export default function FaceDataMaster() {
+    const [view, setView] = useState<"list" | "create">("list");
     const [employees, setEmployees] = useState<Employee[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [searchTerm, setSearchTerm] = useState("");
+
+    // Create View State
     const [selectedEmployee, setSelectedEmployee] = useState<string>("");
     const [capturedImages, setCapturedImages] = useState<string[]>([]);
-    const [loading, setLoading] = useState(true);
     const [training, setTraining] = useState(false);
     const webcamRef = useRef<Webcam>(null);
 
-    // Fetch Employees
     useEffect(() => {
-        fetchEmployees();
-    }, []);
+        if (view === "list") {
+            fetchEmployees();
+        }
+    }, [view]);
 
     const fetchEmployees = async () => {
+        setLoading(true);
         try {
             const token = localStorage.getItem("token");
             const response = await axios.get(
                 `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/api/hr/employee`,
                 { headers: { Authorization: `Bearer ${token}` } }
             );
-            setEmployees(response.data);
+            setEmployees(response.data.employees || []);
         } catch (error) {
             console.error("Error fetching employees:", error);
         } finally {
             setLoading(false);
         }
+    };
+
+    const handleStartCreate = (employeeId?: string) => {
+        setSelectedEmployee(employeeId || "");
+        setCapturedImages([]);
+        setView("create");
     };
 
     const capture = useCallback(() => {
@@ -86,6 +102,7 @@ export default function FaceDataMaster() {
             alert("Face data saved and model trained successfully!");
             setCapturedImages([]);
             setSelectedEmployee("");
+            setView("list"); // Return to list view
         } catch (error: any) {
             console.error("Training error:", error);
             alert(error.response?.data?.message || "Failed to train face data.");
@@ -94,102 +111,226 @@ export default function FaceDataMaster() {
         }
     };
 
-    return (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Left: Controls & Camera */}
-            <div className="space-y-6">
-                <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-                    <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
-                        <User size={20} className="text-blue-500" /> Select Employee
-                    </h3>
-                    <select
-                        value={selectedEmployee}
-                        onChange={(e) => setSelectedEmployee(e.target.value)}
-                        className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-gray-50"
-                    >
-                        <option value="">-- Choose Employee --</option>
-                        {employees.map((emp) => (
-                            <option key={emp._id} value={emp._id}>
-                                {emp.firstName} {emp.lastName} ({emp.employeeId})
-                            </option>
-                        ))}
-                    </select>
-                </div>
+    const filteredEmployees = employees.filter(emp =>
+        (emp.firstName + " " + emp.lastName).toLowerCase().includes(searchTerm.toLowerCase()) ||
+        emp.employeeId.toLowerCase().includes(searchTerm.toLowerCase())
+    );
 
-                <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 overflow-hidden relative">
-                    <div className="aspect-video bg-black rounded-lg overflow-hidden relative">
-                        <Webcam
-                            audio={false}
-                            ref={webcamRef}
-                            screenshotFormat="image/jpeg"
-                            className="w-full h-full object-cover"
-                            videoConstraints={{ facingMode: "user" }}
+    if (view === "list") {
+        return (
+            <div className="space-y-4">
+                <div className="flex flex-row justify-between items-center bg-white p-4 rounded-xl shadow-sm border border-gray-100 gap-3 md:gap-4">
+                    <div className="relative flex-1 md:flex-none md:w-64">
+                        <Search
+                            className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+                            size={18}
+                        />
+                        <input
+                            type="text"
+                            placeholder="Search employees..."
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            className="w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
                         />
                     </div>
                     <button
-                        onClick={capture}
-                        disabled={!selectedEmployee || capturedImages.length >= 5}
-                        className="mt-4 w-full flex items-center justify-center gap-2 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium"
+                        onClick={() => handleStartCreate()}
+                        className="flex-none flex items-center justify-center gap-2 px-3 md:px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
                     >
-                        <Camera size={20} />
-                        Capture Photo ({capturedImages.length}/5)
+                        <Plus size={18} />
+                        <span className="hidden md:inline">Add Face Data</span>
                     </button>
                 </div>
+
+                <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                    <table className="w-full text-left">
+                        <thead className="bg-gray-50 border-b border-gray-100">
+                            <tr>
+                                <th className="px-6 py-4 font-semibold text-gray-700">Employee</th>
+                                <th className="px-6 py-4 font-semibold text-gray-700">ID</th>
+                                <th className="px-6 py-4 font-semibold text-gray-700">Department</th>
+                                <th className="px-6 py-4 font-semibold text-gray-700">Status</th>
+                                <th className="px-6 py-4 font-semibold text-gray-700 text-right">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-100">
+                            {loading ? (
+                                <tr>
+                                    <td colSpan={5} className="px-6 py-8 text-center text-gray-500">
+                                        <LoadingSpinner />
+                                    </td>
+                                </tr>
+                            ) : filteredEmployees.length === 0 ? (
+                                <tr>
+                                    <td colSpan={5} className="px-6 py-8 text-center text-gray-500">
+                                        No employees found
+                                    </td>
+                                </tr>
+                            ) : (
+                                filteredEmployees.map((emp) => (
+                                    <tr key={emp._id} className="hover:bg-gray-50 transition-colors">
+                                        <td className="px-6 py-4">
+                                            <div className="flex items-center gap-3">
+                                                {emp.photo ? (
+                                                    <img src={emp.photo} alt={emp.firstName} className="w-10 h-10 rounded-full object-cover border border-gray-200" />
+                                                ) : (
+                                                    <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold">
+                                                        {emp.firstName.charAt(0)}
+                                                    </div>
+                                                )}
+                                                <div className="font-medium text-gray-900">{emp.firstName} {emp.lastName}</div>
+                                            </div>
+                                        </td>
+                                        <td className="px-6 py-4 text-gray-600">{emp.employeeId}</td>
+                                        <td className="px-6 py-4 text-gray-600">{emp.department}</td>
+                                        <td className="px-6 py-4">
+                                            {emp.faceEncoding === "Active" ? (
+                                                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                                    <Check size={12} /> Registered
+                                                </span>
+                                            ) : (
+                                                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                                                    Not Registered
+                                                </span>
+                                            )}
+                                        </td>
+                                        <td className="px-6 py-4 text-right">
+                                            <button
+                                                onClick={() => handleStartCreate(emp._id)}
+                                                className="text-blue-600 hover:text-blue-800 font-medium text-sm"
+                                            >
+                                                {emp.faceEncoding === "Active" ? "Retrain" : "Register Face"}
+                                            </button>
+                                        </td>
+                                    </tr>
+                                ))
+                            )}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        );
+    }
+
+    // Create/Edit View
+    return (
+        <div className="flex flex-col gap-6">
+            <div className="flex items-center gap-4">
+                <button
+                    onClick={() => setView("list")}
+                    className="p-2 hover:bg-gray-100 rounded-lg transition-colors text-gray-600"
+                >
+                    <ArrowLeft size={24} />
+                </button>
+                <h2 className="text-xl font-bold text-gray-900">
+                    {selectedEmployee ? "Register Face Data" : "New Face Registration"}
+                </h2>
             </div>
 
-            {/* Right: Gallery & Actions */}
-            <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex flex-col h-full">
-                <h3 className="text-lg font-semibold text-gray-800 mb-4">Captured Photos</h3>
-
-                {capturedImages.length === 0 ? (
-                    <div className="flex-1 flex flex-col items-center justify-center text-gray-400 border-2 border-dashed border-gray-200 rounded-xl p-8">
-                        <Camera size={48} className="mb-2 opacity-20" />
-                        <p>Select employee and capture photos to start</p>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* Left: Controls & Camera */}
+                <div className="space-y-6">
+                    <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Select Employee</label>
+                        <select
+                            value={selectedEmployee}
+                            onChange={(e) => setSelectedEmployee(e.target.value)}
+                            disabled={!!selectedEmployee && view === "create" && selectedEmployee !== ""}
+                            // Only disable if we passed an ID explicitly, otherwise allow changing if started from "Add"
+                            className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-gray-50"
+                        >
+                            <option value="">-- Choose Employee --</option>
+                            {employees.map((emp) => (
+                                <option key={emp._id} value={emp._id}>
+                                    {emp.firstName} {emp.lastName} ({emp.employeeId})
+                                </option>
+                            ))}
+                        </select>
                     </div>
-                ) : (
-                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-6">
-                        {capturedImages.map((img, index) => (
-                            <div key={index} className="relative group aspect-square rounded-lg overflow-hidden border border-gray-200">
-                                <img src={img} alt={`Capture ${index}`} className="w-full h-full object-cover" />
-                                <button
-                                    onClick={() => removeImage(index)}
-                                    className="absolute top-1 right-1 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity transform hover:scale-110"
-                                >
-                                    <Trash2 size={14} />
-                                </button>
-                                <div className="absolute bottom-1 left-1 bg-black/50 text-white text-[10px] px-1.5 py-0.5 rounded">
-                                    #{index + 1}
+
+                    <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 overflow-hidden relative">
+                        <div className="aspect-video bg-black rounded-lg overflow-hidden relative">
+                            <Webcam
+                                audio={false}
+                                ref={webcamRef}
+                                screenshotFormat="image/jpeg"
+                                className="w-full h-full object-cover"
+                                videoConstraints={{ facingMode: "user" }}
+                            />
+                        </div>
+                        <button
+                            onClick={capture}
+                            disabled={!selectedEmployee || capturedImages.length >= 5}
+                            className="mt-4 w-full flex items-center justify-center gap-2 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium"
+                        >
+                            <Camera size={20} />
+                            Capture Photo ({capturedImages.length}/5)
+                        </button>
+                    </div>
+                </div>
+
+                {/* Right: Gallery & Actions */}
+                <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex flex-col h-full">
+                    <h3 className="text-lg font-semibold text-gray-800 mb-4">Captured Photos</h3>
+
+                    {capturedImages.length === 0 ? (
+                        <div className="flex-1 flex flex-col items-center justify-center text-gray-400 border-2 border-dashed border-gray-200 rounded-xl p-8">
+                            <Camera size={48} className="mb-2 opacity-20" />
+                            <p>Select employee and capture photos to start</p>
+                        </div>
+                    ) : (
+                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-6">
+                            {capturedImages.map((img, index) => (
+                                <div key={index} className="relative group aspect-square rounded-lg overflow-hidden border border-gray-200">
+                                    <img src={img} alt={`Capture ${index}`} className="w-full h-full object-cover" />
+                                    <button
+                                        onClick={() => removeImage(index)}
+                                        className="absolute top-1 right-1 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity transform hover:scale-110"
+                                    >
+                                        <Trash2 size={14} />
+                                    </button>
+                                    <div className="absolute bottom-1 left-1 bg-black/50 text-white text-[10px] px-1.5 py-0.5 rounded">
+                                        #{index + 1}
+                                    </div>
                                 </div>
-                            </div>
-                        ))}
-                    </div>
-                )}
+                            ))}
+                        </div>
+                    )}
 
-                <div className="mt-auto pt-6 border-t border-gray-100">
-                    <div className="bg-blue-50 p-4 rounded-lg mb-4 text-sm text-blue-700">
-                        <p className="font-semibold mb-1">Instructions:</p>
-                        <ul className="list-disc pl-4 space-y-1">
-                            <li>Capture at least 3 photos of the employee.</li>
-                            <li>Ensure good lighting and face visibility.</li>
-                            <li>Ask employee to slightly turn head left/right for better model.</li>
-                        </ul>
-                    </div>
+                    <div className="mt-auto pt-6 border-t border-gray-100">
+                        <div className="bg-blue-50 p-4 rounded-lg mb-4 text-sm text-blue-700">
+                            <p className="font-semibold mb-1">Instructions:</p>
+                            <ul className="list-disc pl-4 space-y-1">
+                                <li>Capture at least 3 photos of the employee.</li>
+                                <li>Ensure good lighting and face visibility.</li>
+                                <li>Ask employee to slightly turn head left/right for better model.</li>
+                            </ul>
+                        </div>
 
-                    <button
-                        onClick={handleTrain}
-                        disabled={capturedImages.length < 3 || training}
-                        className="w-full flex items-center justify-center gap-2 py-4 bg-green-600 text-white rounded-xl hover:bg-green-700 disabled:opacity-50 transition-all font-bold text-lg shadow-lg shadow-green-200"
-                    >
-                        {training ? (
-                            <>
-                                <RefreshCw size={24} className="animate-spin" /> Processing...
-                            </>
-                        ) : (
-                            <>
-                                <Save size={24} /> Save Face Data
-                            </>
-                        )}
-                    </button>
+                        <div className="flex gap-3">
+                            <button
+                                onClick={() => setView("list")}
+                                className="flex-1 py-4 text-gray-700 hover:bg-gray-100 rounded-xl font-medium transition-colors"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={handleTrain}
+                                disabled={capturedImages.length < 3 || training}
+                                className="flex-[2] flex items-center justify-center gap-2 py-4 bg-green-600 text-white rounded-xl hover:bg-green-700 disabled:opacity-50 transition-all font-bold text-lg shadow-lg shadow-green-200"
+                            >
+                                {training ? (
+                                    <>
+                                        <RefreshCw size={24} className="animate-spin" /> Processing...
+                                    </>
+                                ) : (
+                                    <>
+                                        <Save size={24} /> Save Face Data
+                                    </>
+                                )}
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
