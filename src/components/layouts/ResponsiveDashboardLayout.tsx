@@ -23,6 +23,7 @@ import {
   Truck,
   ShoppingCart,
   Database,
+  LayoutGrid,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { clearSession } from "@/src/lib/session";
@@ -462,6 +463,18 @@ export default function ResponsiveDashboardLayout({ children }: { children: Reac
           </div>
         </div>
       )}
+
+      {/* Mobile Module Switcher FAB */}
+      <div className="lg:hidden fixed bottom-20 left-4 z-40">
+        <button
+          onClick={() => setMobileSidebarOpen(true)}
+          className="w-12 h-12 bg-indigo-600 text-white rounded-full shadow-lg shadow-indigo-200 flex items-center justify-center hover:bg-indigo-700 transition-all active:scale-95"
+          title="Switch Module"
+        >
+          <LayoutGrid size={24} />
+        </button>
+      </div>
+
     </div>
   );
 }

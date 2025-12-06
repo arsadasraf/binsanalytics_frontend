@@ -19,7 +19,7 @@ export default function Dashboard() {
   useEffect(() => {
     const token = localStorage.getItem("token");
     const userType = localStorage.getItem("userType");
-    
+
     if (!token) {
       router.push("/login");
       return;
@@ -30,7 +30,7 @@ export default function Dashboard() {
       if (userInfoStr) {
         const user = JSON.parse(userInfoStr);
         const department = user.department;
-        
+
         if (department === "HR") {
           router.push("/dashboard/hr");
         } else if (department === "Store") {
@@ -47,7 +47,7 @@ export default function Dashboard() {
 
     setShouldFetchProfile(true);
   }, []);
-  
+
   useEffect(() => {
     if (data) {
       setUserInfo(data);
@@ -144,36 +144,8 @@ export default function Dashboard() {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
-      {/* Header */}
-      <header className="bg-white shadow-sm border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex justify-between items-center">
-            <div>
-              <h1 className="text-2xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
-                BinsAnalytics ERP
-              </h1>
-              <p className="text-sm text-gray-600 mt-1">Shop Floor Management System</p>
-            </div>
-            <div className="flex items-center gap-4">
-              {userInfo && (
-                <div className="text-right">
-                  <p className="text-sm font-medium text-gray-900">{userInfo.companyName}</p>
-                  <p className="text-xs text-gray-500">Company Admin</p>
-                </div>
-              )}
-              <button
-                onClick={handleLogout}
-                className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg font-medium shadow-sm hover:shadow transition-all"
-              >
-                Logout
-              </button>
-            </div>
-          </div>
-        </div>
-      </header>
-
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="min-h-screen bg-gray-50 pb-24">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         {loading ? (
           <div className="flex justify-center items-center py-20">
             <LoadingSpinner size="lg" />
@@ -182,55 +154,59 @@ export default function Dashboard() {
           <>
             {/* Welcome Banner */}
             {userInfo && (
-              <div className="mb-8 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-2xl p-8 text-white shadow-xl">
-                <div className="flex items-center justify-between">
+              <div className="mb-6 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-2xl p-6 text-white shadow-lg overflow-hidden relative">
+                <div className="flex items-center justify-between relative z-10">
                   <div>
-                    <h2 className="text-3xl font-bold mb-2">
-                      Welcome, {userInfo.companyName || "Admin"}!
+                    <h2 className="text-2xl font-bold mb-1">
+                      Welcome Back!
                     </h2>
-                    <p className="text-indigo-100 text-lg">
-                      Manage your shop floor operations from here. Create users, assign roles, and monitor all activities.
+                    <p className="text-indigo-100 text-sm md:text-base font-medium opacity-90">
+                      {userInfo.companyName}
                     </p>
                   </div>
+                  <div className="md:hidden">
+                    <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm">
+                      <span className="text-xl">👋</span>
+                    </div>
+                  </div>
                   <div className="hidden md:block">
-                    <div className="w-24 h-24 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
-                      <svg className="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    <div className="w-20 h-20 bg-white/20 rounded-full flex items-center justify-center">
+                      <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                       </svg>
                     </div>
                   </div>
                 </div>
+                {/* Decorative circles */}
+                <div className="absolute -top-6 -right-6 w-24 h-24 bg-white/10 rounded-full blur-xl"></div>
+                <div className="absolute -bottom-6 -left-6 w-32 h-32 bg-indigo-500/30 rounded-full blur-xl"></div>
               </div>
             )}
 
             {/* Dashboard Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {dashboardCards.map((card, index) => (
-                <Link
-                  key={index}
-                  href={card.href}
-                  className="group bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 border border-gray-100 overflow-hidden"
-                >
-                  <div className="p-6">
-                    <div className={`w-16 h-16 ${card.bgColor} rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform ${card.textColor}`}>
+            <div>
+              <h3 className="text-lg font-bold text-gray-900 mb-4 px-1">Modules</h3>
+              <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6">
+                {dashboardCards.map((card, index) => (
+                  <Link
+                    key={index}
+                    href={card.href}
+                    className="group flex flex-col items-center p-4 bg-white rounded-xl shadow-sm border border-gray-100 active:scale-95 transition-all duration-200"
+                  >
+                    <div className={`w-12 h-12 ${card.bgColor} rounded-xl flex items-center justify-center mb-3 ${card.textColor} shadow-inner`}>
                       {card.icon}
                     </div>
-                    <h3 className="text-xl font-bold text-gray-900 mb-2 group-hover:text-indigo-600 transition-colors">
-                      {card.title}
-                    </h3>
-                    <p className="text-gray-600 text-sm leading-relaxed">
-                      {card.description}
-                    </p>
-                    <div className="mt-4 flex items-center text-sm font-medium text-indigo-600 group-hover:text-indigo-700">
-                      <span>Go to {card.title}</span>
-                      <svg className="w-4 h-4 ml-2 transform group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                      </svg>
+                    <div className="text-center">
+                      <h3 className="font-semibold text-gray-900 text-sm md:text-lg mb-1 leading-tight">
+                        {card.title}
+                      </h3>
+                      <p className="hidden md:block text-gray-500 text-xs md:text-sm mt-1 line-clamp-2">
+                        {card.description}
+                      </p>
                     </div>
-                  </div>
-                  <div className={`h-1 bg-gradient-to-r ${card.gradient} transform scale-x-0 group-hover:scale-x-100 transition-transform origin-left`}></div>
-                </Link>
-              ))}
+                  </Link>
+                ))}
+              </div>
             </div>
           </>
         )}
