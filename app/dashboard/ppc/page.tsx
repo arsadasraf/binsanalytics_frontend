@@ -2,14 +2,26 @@
 
 import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import Link from "next/link";
 import LoadingSpinner from "@/src/components/LoadingSpinner";
 import ErrorAlert from "@/src/components/ErrorAlert";
 import SuccessAlert from "@/src/components/SuccessAlert";
+import PPCMasterTab from "./components/PPCMasterTab";
+import PPCTabs from "./components/PPCTabs";
+
+// Define Tab Types
+type PPCTab = "home" | "orders" | "auto-planning" | "master";
+type OrderSubTab = "po-list" | "create-po" | "create-workorder";
+type MasterSubTab = "machine-list" | "material" | "customer" | "supplier";
 
 export default function PPCPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const tab = searchParams.get("tab") || "home";
+
+  // Parse tabs from URL or default
+  const tab = (searchParams.get("tab") as PPCTab) || "home";
+  const subTab = searchParams.get("subTab");
+
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(true);
@@ -26,7 +38,8 @@ export default function PPCPage() {
 
     if (userType === "user" && userInfoStr) {
       const user = JSON.parse(userInfoStr);
-      if (user.department !== "PPC") {
+      // Allow access if department is PPC or if user is Company Admin
+      if (user.department !== "PPC" && userType !== "company") {
         setError("Access denied. You don't have permission to access PPC module.");
         setTimeout(() => {
           router.push("/dashboard");
@@ -38,6 +51,14 @@ export default function PPCPage() {
     setLoading(false);
   }, [router]);
 
+  // Helper to update URL with tab and subTab
+  const navigateTo = (newTab: PPCTab, newSubTab?: string) => {
+    const params = new URLSearchParams();
+    params.set("tab", newTab);
+    if (newSubTab) params.set("subTab", newSubTab);
+    router.push(`/dashboard/ppc?${params.toString()}`);
+  };
+
   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-screen">
@@ -47,32 +68,82 @@ export default function PPCPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
-      <div className="p-4 md:p-6">
-        <div className="max-w-7xl mx-auto">
-          {/* Header */}
-          <div className="mb-6">
-            <h1 className="text-2xl md:text-3xl font-bold text-gray-900">PPC Management</h1>
-            <p className="text-gray-600 mt-1">Production Planning & Control</p>
-          </div>
+    <div className="min-h-screen bg-gray-50 pb-24 sm:pb-8">
+      <div className="p-4 md:p-6 max-w-7xl mx-auto">
+        {/* Header */}
+        <div className="mb-6">
+          <h1 className="text-2xl md:text-3xl font-bold text-gray-900">PPC Management</h1>
+          <p className="text-gray-600 mt-1">Production Planning & Control</p>
+        </div>
 
-          {/* Alerts */}
-          {error && <ErrorAlert message={error} onClose={() => setError("")} />}
-          {success && <SuccessAlert message={success} onClose={() => setSuccess("")} />}
+        {/* Alerts */}
+        {error && <ErrorAlert message={error} onClose={() => setError("")} />}
+        {success && <SuccessAlert message={success} onClose={() => setSuccess("")} />}
 
-          {/* Tab Content */}
-          <div className="bg-white rounded-lg shadow-md p-6">
-            {tab === "home" && <HomeTab />}
-            {tab === "po-list" && <POListTab />}
-            {tab === "create-po" && <CreatePOTab setSuccess={setSuccess} setError={setError} />}
-            {tab === "create-workorder" && <CreateWorkOrderTab setSuccess={setSuccess} setError={setError} />}
-            {tab === "auto-planning" && <AutoPlanningTab setSuccess={setSuccess} setError={setError} />}
-          </div>
+        {/* Main Tabs Navigation */}
+        <PPCTabs activeTab={tab} />
+
+        {/* Tab Content */}
+        <div className="bg-white rounded-lg shadow-sm p-4 md:p-6 min-h-[500px]">
+
+          {/* HOME TAB */}
+          {tab === "home" && <HomeTab />}
+
+          {/* ORDERS TAB */}
+          {tab === "orders" && (
+            <OrdersLayout
+              currentSubTab={(subTab as OrderSubTab) || "po-list"}
+              onChangeSubTab={(st) => navigateTo("orders", st)}
+              setSuccess={setSuccess}
+              setError={setError}
+            />
+          )}
+
+          {/* AUTO PLANNING TAB */}
+          {tab === "auto-planning" && <AutoPlanningTab setSuccess={setSuccess} setError={setError} />}
+
+          {/* MASTER TAB */}
+          {tab === "master" && (
+            <div className="flex flex-col gap-4">
+              {/* Master Sub-tabs */}
+              <div className="flex flex-wrap gap-2 mb-4 border-b">
+                <button
+                  onClick={() => navigateTo("master", "machine-list")}
+                  className={`px-4 py-2 font-medium text-sm ${subTab === "machine-list" ? "bg-indigo-50 text-indigo-700 rounded-t-lg border-b-2 border-indigo-600" : "text-gray-600 hover:bg-gray-50"}`}
+                >
+                  Machine List
+                </button>
+                <button
+                  onClick={() => navigateTo("master", "material")}
+                  className={`px-4 py-2 font-medium text-sm ${subTab === "material" ? "bg-indigo-50 text-indigo-700 rounded-t-lg border-b-2 border-indigo-600" : "text-gray-600 hover:bg-gray-50"}`}
+                >
+                  Material
+                </button>
+                <button
+                  onClick={() => navigateTo("master", "customer")}
+                  className={`px-4 py-2 font-medium text-sm ${subTab === "customer" ? "bg-indigo-50 text-indigo-700 rounded-t-lg border-b-2 border-indigo-600" : "text-gray-600 hover:bg-gray-50"}`}
+                >
+                  Customer
+                </button>
+                <button
+                  onClick={() => navigateTo("master", "supplier")}
+                  className={`px-4 py-2 font-medium text-sm ${subTab === "supplier" ? "bg-indigo-50 text-indigo-700 rounded-t-lg border-b-2 border-indigo-600" : "text-gray-600 hover:bg-gray-50"}`}
+                >
+                  Supplier
+                </button>
+              </div>
+
+              <PPCMasterTab subTab={(subTab as MasterSubTab) || "machine-list"} />
+            </div>
+          )}
+
         </div>
       </div>
     </div>
   );
 }
+
+// ==================== SUB-COMPONENTS ====================
 
 // Home Tab Component
 function HomeTab() {
@@ -90,16 +161,17 @@ function HomeTab() {
   const fetchData = async () => {
     setLoading(true);
     const token = localStorage.getItem("token");
+    const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
     try {
       if (subTab === "machines") {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/ppc/machine`, {
+        const res = await fetch(`${API_BASE_URL}/api/ppc/machine`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         const data = await res.json();
         setMachines(data.machines || []);
       } else {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/ppc/manpower`, {
+        const res = await fetch(`${API_BASE_URL}/api/ppc/manpower`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         const data = await res.json();
@@ -114,11 +186,11 @@ function HomeTab() {
 
   const fetchSchedules = async (id: string, type: "machine" | "employee") => {
     const token = localStorage.getItem("token");
-
+    const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
     try {
       const endpoint = type === "machine"
-        ? `${process.env.NEXT_PUBLIC_API_URL}/ppc/machine/${id}/schedules`
-        : `${process.env.NEXT_PUBLIC_API_URL}/ppc/employee/${id}/schedules`;
+        ? `${API_BASE_URL}/api/ppc/machine/${id}/schedules`
+        : `${API_BASE_URL}/api/ppc/employee/${id}/schedules`;
 
       const res = await fetch(endpoint, {
         headers: { Authorization: `Bearer ${token}` },
@@ -137,7 +209,7 @@ function HomeTab() {
 
   return (
     <div>
-      <h2 className="text-xl font-bold mb-4">Home</h2>
+      <h2 className="text-xl font-bold mb-4">Overview</h2>
 
       {/* Sub-tabs */}
       <div className="flex gap-2 mb-6 border-b">
@@ -148,8 +220,8 @@ function HomeTab() {
             setSchedules([]);
           }}
           className={`px-4 py-2 font-medium border-b-2 transition-colors ${subTab === "machines"
-              ? "border-indigo-600 text-indigo-600"
-              : "border-transparent text-gray-600 hover:text-gray-900"
+            ? "border-indigo-600 text-indigo-600"
+            : "border-transparent text-gray-600 hover:text-gray-900"
             }`}
         >
           Machines
@@ -161,8 +233,8 @@ function HomeTab() {
             setSchedules([]);
           }}
           className={`px-4 py-2 font-medium border-b-2 transition-colors ${subTab === "employees"
-              ? "border-indigo-600 text-indigo-600"
-              : "border-transparent text-gray-600 hover:text-gray-900"
+            ? "border-indigo-600 text-indigo-600"
+            : "border-transparent text-gray-600 hover:text-gray-900"
             }`}
         >
           Employees
@@ -177,9 +249,7 @@ function HomeTab() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* List */}
           <div>
-            <h3 className="font-semibold mb-3">
-              {subTab === "machines" ? "Machine List" : "Employee List"}
-            </h3>
+            <h3 className="font-semibold mb-3">{subTab === "machines" ? "Machine List" : "Employee List"}</h3>
             <div className="space-y-2">
               {subTab === "machines" ? (
                 machines.length === 0 ? (
@@ -190,8 +260,8 @@ function HomeTab() {
                       key={machine._id}
                       onClick={() => handleItemClick(machine)}
                       className={`p-4 border rounded-lg cursor-pointer transition-all ${selectedItem?._id === machine._id
-                          ? "border-indigo-600 bg-indigo-50"
-                          : "border-gray-200 hover:border-indigo-300"
+                        ? "border-indigo-600 bg-indigo-50"
+                        : "border-gray-200 hover:border-indigo-300"
                         }`}
                     >
                       <div className="flex justify-between items-start">
@@ -202,10 +272,10 @@ function HomeTab() {
                         </div>
                         <span
                           className={`px-2 py-1 text-xs rounded-full ${machine.status === "Available"
-                              ? "bg-green-100 text-green-800"
-                              : machine.status === "Busy"
-                                ? "bg-yellow-100 text-yellow-800"
-                                : "bg-red-100 text-red-800"
+                            ? "bg-green-100 text-green-800"
+                            : machine.status === "Busy"
+                              ? "bg-yellow-100 text-yellow-800"
+                              : "bg-red-100 text-red-800"
                             }`}
                         >
                           {machine.status}
@@ -223,8 +293,8 @@ function HomeTab() {
                       key={emp._id}
                       onClick={() => handleItemClick(emp)}
                       className={`p-4 border rounded-lg cursor-pointer transition-all ${selectedItem?._id === emp._id
-                          ? "border-indigo-600 bg-indigo-50"
-                          : "border-gray-200 hover:border-indigo-300"
+                        ? "border-indigo-600 bg-indigo-50"
+                        : "border-gray-200 hover:border-indigo-300"
                         }`}
                     >
                       <div className="flex justify-between items-start">
@@ -237,10 +307,10 @@ function HomeTab() {
                         </div>
                         <span
                           className={`px-2 py-1 text-xs rounded-full ${emp.status === "Available"
-                              ? "bg-green-100 text-green-800"
-                              : emp.status === "Busy"
-                                ? "bg-yellow-100 text-yellow-800"
-                                : "bg-gray-100 text-gray-800"
+                            ? "bg-green-100 text-green-800"
+                            : emp.status === "Busy"
+                              ? "bg-yellow-100 text-yellow-800"
+                              : "bg-gray-100 text-gray-800"
                             }`}
                         >
                           {emp.status}
@@ -297,6 +367,52 @@ function HomeTab() {
   );
 }
 
+// Orders Layout Component
+function OrdersLayout({ currentSubTab, onChangeSubTab, setSuccess, setError }: {
+  currentSubTab: OrderSubTab;
+  onChangeSubTab: (tab: OrderSubTab) => void;
+  setSuccess: (msg: string) => void;
+  setError: (msg: string) => void;
+}) {
+  return (
+    <div>
+      <div className="flex gap-2 mb-6 border-b">
+        <button
+          onClick={() => onChangeSubTab("po-list")}
+          className={`px-4 py-2 font-medium border-b-2 transition-colors ${currentSubTab === "po-list"
+            ? "border-indigo-600 text-indigo-600"
+            : "border-transparent text-gray-600 hover:text-gray-900"
+            }`}
+        >
+          PO List
+        </button>
+        <button
+          onClick={() => onChangeSubTab("create-po")}
+          className={`px-4 py-2 font-medium border-b-2 transition-colors ${currentSubTab === "create-po"
+            ? "border-indigo-600 text-indigo-600"
+            : "border-transparent text-gray-600 hover:text-gray-900"
+            }`}
+        >
+          Create PO
+        </button>
+        <button
+          onClick={() => onChangeSubTab("create-workorder")}
+          className={`px-4 py-2 font-medium border-b-2 transition-colors ${currentSubTab === "create-workorder"
+            ? "border-indigo-600 text-indigo-600"
+            : "border-transparent text-gray-600 hover:text-gray-900"
+            }`}
+        >
+          Create Work Order
+        </button>
+      </div>
+
+      {currentSubTab === "po-list" && <POListTab />}
+      {currentSubTab === "create-po" && <CreatePOTab setSuccess={setSuccess} setError={setError} />}
+      {currentSubTab === "create-workorder" && <CreateWorkOrderTab setSuccess={setSuccess} setError={setError} />}
+    </div>
+  );
+}
+
 // PO List Tab Component
 function POListTab() {
   const [orders, setOrders] = useState<any[]>([]);
@@ -308,9 +424,10 @@ function POListTab() {
 
   const fetchOrders = async () => {
     const token = localStorage.getItem("token");
+    const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/ppc/order`, {
+      const res = await fetch(`${API_BASE_URL}/api/ppc/order`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
@@ -332,7 +449,7 @@ function POListTab() {
 
   return (
     <div>
-      <h2 className="text-xl font-bold mb-4">PO List</h2>
+      <h2 className="text-xl font-bold mb-4">Purchase Orders</h2>
 
       {orders.length === 0 ? (
         <p className="text-gray-500 text-center py-8">No POs found</p>
@@ -349,10 +466,10 @@ function POListTab() {
                 </div>
                 <span
                   className={`px-3 py-1 text-sm rounded-full ${order.status === "Completed"
-                      ? "bg-green-100 text-green-800"
-                      : order.status === "InProgress"
-                        ? "bg-blue-100 text-blue-800"
-                        : "bg-gray-100 text-gray-800"
+                    ? "bg-green-100 text-green-800"
+                    : order.status === "InProgress"
+                      ? "bg-blue-100 text-blue-800"
+                      : "bg-gray-100 text-gray-800"
                     }`}
                 >
                   {order.status}
@@ -403,9 +520,10 @@ function CreatePOTab({ setSuccess, setError }: any) {
 
   const fetchRouteCards = async () => {
     const token = localStorage.getItem("token");
+    const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/ppc/route-card`, {
+      const res = await fetch(`${API_BASE_URL}/api/ppc/route-card`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
@@ -446,10 +564,11 @@ function CreatePOTab({ setSuccess, setError }: any) {
     setSuccess("");
 
     const token = localStorage.getItem("token");
+    const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
     try {
       // Create PO
-      const poRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/ppc/order`, {
+      const poRes = await fetch(`${API_BASE_URL}/api/ppc/order`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -473,7 +592,7 @@ function CreatePOTab({ setSuccess, setError }: any) {
 
       // Create components
       for (const comp of components) {
-        await fetch(`${process.env.NEXT_PUBLIC_API_URL}/ppc/component`, {
+        await fetch(`${API_BASE_URL}/api/ppc/component`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -504,7 +623,7 @@ function CreatePOTab({ setSuccess, setError }: any) {
 
   return (
     <div>
-      <h2 className="text-xl font-bold mb-4">Create PO</h2>
+      <h2 className="text-xl font-bold mb-4">Create New PO</h2>
 
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* PO Details */}
@@ -676,9 +795,10 @@ function CreateWorkOrderTab({ setSuccess, setError }: any) {
 
   const fetchComponents = async () => {
     const token = localStorage.getItem("token");
+    const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/ppc/component`, {
+      const res = await fetch(`${API_BASE_URL}/api/ppc/component`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
@@ -690,9 +810,10 @@ function CreateWorkOrderTab({ setSuccess, setError }: any) {
 
   const fetchMachines = async () => {
     const token = localStorage.getItem("token");
+    const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/ppc/machine`, {
+      const res = await fetch(`${API_BASE_URL}/api/ppc/machine`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
@@ -704,9 +825,10 @@ function CreateWorkOrderTab({ setSuccess, setError }: any) {
 
   const fetchManpower = async () => {
     const token = localStorage.getItem("token");
+    const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/ppc/manpower`, {
+      const res = await fetch(`${API_BASE_URL}/api/ppc/manpower`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
@@ -751,9 +873,10 @@ function CreateWorkOrderTab({ setSuccess, setError }: any) {
 
     const token = localStorage.getItem("token");
     const comp = components.find((c) => c._id === selectedComponent);
+    const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/ppc/workorder`, {
+      const res = await fetch(`${API_BASE_URL}/api/ppc/workorder`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -807,17 +930,17 @@ function CreateWorkOrderTab({ setSuccess, setError }: any) {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Component *</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Select Component *</label>
             <select
               required
               value={selectedComponent}
               onChange={(e) => handleComponentChange(e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500"
             >
-              <option value="">Select Component</option>
-              {components.map((comp) => (
-                <option key={comp._id} value={comp._id}>
-                  {comp.componentCode} - {comp.componentName} (PO: {comp.po?.orderNumber})
+              <option value="">Select a component</option>
+              {components.map((c) => (
+                <option key={c._id} value={c._id}>
+                  {c.componentName} ({c.componentCode}) - PO: {c.po?.orderNumber}
                 </option>
               ))}
             </select>
@@ -830,6 +953,15 @@ function CreateWorkOrderTab({ setSuccess, setError }: any) {
               min="1"
               value={formData.quantity}
               onChange={(e) => setFormData({ ...formData, quantity: parseInt(e.target.value) })}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Remarks</label>
+            <input
+              type="text"
+              value={formData.remarks}
+              onChange={(e) => setFormData({ ...formData, remarks: e.target.value })}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500"
             />
           </div>
@@ -853,7 +985,7 @@ function CreateWorkOrderTab({ setSuccess, setError }: any) {
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">Assign Machine</label>
                       <select
-                        value={op.assignedMachine}
+                        value={op.assignedMachine || ""}
                         onChange={(e) => updateOperation(index, "assignedMachine", e.target.value)}
                         className="w-full px-3 py-2 border border-gray-300 rounded-md"
                       >
@@ -871,7 +1003,7 @@ function CreateWorkOrderTab({ setSuccess, setError }: any) {
                       <label className="block text-sm font-medium text-gray-700 mb-1">Assign Employees</label>
                       <select
                         multiple
-                        value={op.assignedManpower}
+                        value={op.assignedManpower || []}
                         onChange={(e) =>
                           updateOperation(
                             index,
@@ -894,7 +1026,7 @@ function CreateWorkOrderTab({ setSuccess, setError }: any) {
                       <label className="block text-sm font-medium text-gray-700 mb-1">Scheduled Start</label>
                       <input
                         type="datetime-local"
-                        value={op.scheduledStart}
+                        value={op.scheduledStart || ""}
                         onChange={(e) => updateOperation(index, "scheduledStart", e.target.value)}
                         className="w-full px-3 py-2 border border-gray-300 rounded-md"
                       />
@@ -903,7 +1035,7 @@ function CreateWorkOrderTab({ setSuccess, setError }: any) {
                       <label className="block text-sm font-medium text-gray-700 mb-1">Scheduled End</label>
                       <input
                         type="datetime-local"
-                        value={op.scheduledEnd}
+                        value={op.scheduledEnd || ""}
                         onChange={(e) => updateOperation(index, "scheduledEnd", e.target.value)}
                         className="w-full px-3 py-2 border border-gray-300 rounded-md"
                       />
@@ -915,19 +1047,7 @@ function CreateWorkOrderTab({ setSuccess, setError }: any) {
           </div>
         )}
 
-        {/* Remarks */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Remarks</label>
-          <textarea
-            value={formData.remarks}
-            onChange={(e) => setFormData({ ...formData, remarks: e.target.value })}
-            rows={3}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500"
-          ></textarea>
-        </div>
-
-        {/* Submit */}
-        <div className="flex gap-3">
+        <div className="flex justify-end">
           <button
             type="submit"
             disabled={submitting || !selectedComponent}
@@ -953,9 +1073,10 @@ function AutoPlanningTab({ setSuccess, setError }: any) {
 
   const fetchPendingOrders = async () => {
     const token = localStorage.getItem("token");
+    const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/ppc/order?status=Pending`, {
+      const res = await fetch(`${API_BASE_URL}/api/ppc/order?status=Pending`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
@@ -973,9 +1094,10 @@ function AutoPlanningTab({ setSuccess, setError }: any) {
     setSuccess("");
 
     const token = localStorage.getItem("token");
+    const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/ppc/auto-schedule/${orderId}`, {
+      const res = await fetch(`${API_BASE_URL}/api/ppc/auto-schedule/${orderId}`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
