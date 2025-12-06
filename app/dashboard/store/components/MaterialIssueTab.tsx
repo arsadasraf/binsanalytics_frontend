@@ -24,6 +24,7 @@ export default function MaterialIssueTab({ storeData, token }: MaterialIssueTabP
         updateMaterialRequest, // For Reject
         createMaterialIssue, // For Issue
         materials,
+        inventoryList, // Current Inventory for stock display
         loading
     } = storeData;
 
@@ -145,6 +146,7 @@ export default function MaterialIssueTab({ storeData, token }: MaterialIssueTabP
                 onClose={() => setIsRequestModalOpen(false)}
                 onSubmit={handleCreateRequest}
                 materials={materials}
+                inventoryList={inventoryList}
                 loading={loading}
             />
 

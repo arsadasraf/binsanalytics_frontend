@@ -9,6 +9,7 @@ interface MaterialRequestModalProps {
     onClose: () => void;
     onSubmit: (data: any) => void;
     materials: Material[];
+    inventoryList?: any[]; // Optional to avoid strict type breaking if not passed immediately
     loading?: boolean;
 }
 
@@ -17,6 +18,7 @@ export default function MaterialRequestModal({
     onClose,
     onSubmit,
     materials = [],
+    inventoryList = [],
     loading
 }: MaterialRequestModalProps) {
     const [formData, setFormData] = useState({
@@ -111,11 +113,17 @@ export default function MaterialRequestModal({
                                             required
                                         >
                                             <option value="">Select Material</option>
-                                            {materials.map((m) => (
-                                                <option key={m._id} value={m._id}>
-                                                    {m.name} ({m.code})
-                                                </option>
-                                            ))}
+                                            {materials.map((m) => {
+                                                const stockItem = inventoryList.find((inv: any) => inv.materialName === m.name || inv.materialCode === m.code);
+                                                const stock = stockItem ? stockItem.currentStock : 0;
+                                                const unit = stockItem?.unit || (m as any).unit || "PCS";
+
+                                                return (
+                                                    <option key={m._id} value={m._id}>
+                                                        {m.name} ({m.code}) - Stock: {stock} {unit}
+                                                    </option>
+                                                );
+                                            })}
                                         </select>
                                     </div>
                                     <div className="w-32">

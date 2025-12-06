@@ -144,6 +144,8 @@ export function useStoreData(activeTab: TabType, masterTab: MasterType, token: s
         }
     };
 
+    const [inventoryList, setInventoryList] = useState<any[]>([]);
+
     /**
      * Fetches master data (vendors, customers, locations, categories, materials) for dropdown selections
      * Runs once on component mount
@@ -151,12 +153,13 @@ export function useStoreData(activeTab: TabType, masterTab: MasterType, token: s
     const fetchMasters = async () => {
         if (!token) return;
         try {
-            const [vendorRes, customerRes, locationRes, categoryRes, materialRes] = await Promise.all([
+            const [vendorRes, customerRes, locationRes, categoryRes, materialRes, inventoryRes] = await Promise.all([
                 apiGet("/api/store/vendor", token).catch(() => ({ data: [] })),
                 apiGet("/api/store/customer", token).catch(() => ({ data: [] })),
                 apiGet("/api/store/location", token).catch(() => ({ data: [] })),
                 apiGet("/api/store/category", token).catch(() => ({ data: [] })),
                 apiGet("/api/store/material", token).catch(() => ({ data: [] })),
+                apiGet("/api/store/inventory", token).catch(() => ({ data: [] })),
             ]);
 
             setVendors(vendorRes.data || vendorRes.vendors || []);
@@ -164,6 +167,7 @@ export function useStoreData(activeTab: TabType, masterTab: MasterType, token: s
             setLocations(locationRes.data || locationRes.locations || []);
             setCategories(categoryRes.data || categoryRes.categories || []);
             setMaterials(materialRes.data || materialRes.materials || []);
+            setInventoryList(inventoryRes.data || inventoryRes.inventory || []);
         } catch (err) {
             console.error("Failed to fetch masters:", err);
         }
@@ -716,5 +720,6 @@ export function useStoreData(activeTab: TabType, masterTab: MasterType, token: s
         createMaterialIssue,
         updateMaterialIssue,
         materialRequests,
+        inventoryList,
     };
 }
