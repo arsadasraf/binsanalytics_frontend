@@ -7,7 +7,7 @@
 export type TabType = "home" | "material-issue" | "grn" | "dc" | "billing" | "po" | "masters" | "bills-dc" | "bills-billing" | "bills-po";
 
 // Master data type for master tab navigation
-export type MasterType = "vendor" | "customer" | "location" | "category" | "material" | "grn-history" | "company-info";
+export type MasterType = "vendor" | "customer" | "location" | "category" | "material" | "grn-history" | "po-history" | "company-info";
 
 // Bank Details interface for vendors and customers
 export interface BankDetails {

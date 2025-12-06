@@ -119,8 +119,8 @@ export default function FaceDataMaster() {
     if (view === "list") {
         return (
             <div className="space-y-4">
-                <div className="flex flex-row justify-between items-center bg-white p-4 rounded-xl shadow-sm border border-gray-100 gap-3 md:gap-4">
-                    <div className="relative flex-1 md:flex-none md:w-64">
+                <div className="flex flex-col md:flex-row justify-between items-center bg-white p-4 rounded-xl shadow-sm border border-gray-100 gap-3 md:gap-4">
+                    <div className="relative w-full md:w-64">
                         <Search
                             className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
                             size={18}
@@ -135,78 +135,143 @@ export default function FaceDataMaster() {
                     </div>
                     <button
                         onClick={() => handleStartCreate()}
-                        className="flex-none flex items-center justify-center gap-2 px-3 md:px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                        className="w-full md:w-auto flex items-center justify-center gap-2 px-3 md:px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-sm"
                     >
                         <Plus size={18} />
-                        <span className="hidden md:inline">Add Face Data</span>
+                        <span>Add Face Data</span>
                     </button>
                 </div>
 
-                <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-                    <table className="w-full text-left">
-                        <thead className="bg-gray-50 border-b border-gray-100">
-                            <tr>
-                                <th className="px-6 py-4 font-semibold text-gray-700">Employee</th>
-                                <th className="px-6 py-4 font-semibold text-gray-700">ID</th>
-                                <th className="px-6 py-4 font-semibold text-gray-700">Department</th>
-                                <th className="px-6 py-4 font-semibold text-gray-700">Status</th>
-                                <th className="px-6 py-4 font-semibold text-gray-700 text-right">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-gray-100">
-                            {loading ? (
-                                <tr>
-                                    <td colSpan={5} className="px-6 py-8 text-center text-gray-500">
-                                        <LoadingSpinner />
-                                    </td>
-                                </tr>
-                            ) : filteredEmployees.length === 0 ? (
-                                <tr>
-                                    <td colSpan={5} className="px-6 py-8 text-center text-gray-500">
-                                        No employees found
-                                    </td>
-                                </tr>
-                            ) : (
-                                filteredEmployees.map((emp) => (
-                                    <tr key={emp._id} className="hover:bg-gray-50 transition-colors">
-                                        <td className="px-6 py-4">
+                <div className="bg-gray-50/50 min-h-[300px]">
+                    {loading ? (
+                        <div className="p-6 text-center">
+                            <LoadingSpinner />
+                        </div>
+                    ) : filteredEmployees.length === 0 ? (
+                        <div className="p-12 text-center text-gray-400 flex flex-col items-center gap-3">
+                            <div className="bg-white p-4 rounded-full shadow-sm">
+                                <User size={32} className="opacity-40" />
+                            </div>
+                            <p className="font-medium">No employees found matching your search</p>
+                        </div>
+                    ) : (
+                        <>
+                            {/* Desktop Table */}
+                            <div className="hidden md:block bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                                <table className="w-full text-left">
+                                    <thead className="bg-gray-50 border-b border-gray-100">
+                                        <tr>
+                                            <th className="px-6 py-4 font-semibold text-gray-700">Employee</th>
+                                            <th className="px-6 py-4 font-semibold text-gray-700">ID</th>
+                                            <th className="px-6 py-4 font-semibold text-gray-700">Department</th>
+                                            <th className="px-6 py-4 font-semibold text-gray-700">Status</th>
+                                            <th className="px-6 py-4 font-semibold text-gray-700 text-right">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-gray-100">
+                                        {filteredEmployees.map((emp) => (
+                                            <tr key={emp._id} className="hover:bg-gray-50 transition-colors">
+                                                <td className="px-6 py-4">
+                                                    <div className="flex items-center gap-3">
+                                                        {emp.photo ? (
+                                                            <img src={emp.photo} alt={emp.firstName} className="w-10 h-10 rounded-full object-cover border border-gray-200" />
+                                                        ) : (
+                                                            <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold">
+                                                                {emp.firstName.charAt(0)}
+                                                            </div>
+                                                        )}
+                                                        <div className="font-medium text-gray-900">{emp.firstName} {emp.lastName}</div>
+                                                    </div>
+                                                </td>
+                                                <td className="px-6 py-4 text-gray-600">{emp.employeeId}</td>
+                                                <td className="px-6 py-4 text-gray-600">
+                                                    <span className="bg-blue-50 text-blue-700 px-2.5 py-1 rounded-md text-xs font-semibold border border-blue-100">
+                                                        {emp.department}
+                                                    </span>
+                                                </td>
+                                                <td className="px-6 py-4">
+                                                    {emp.faceEncoding === "Active" ? (
+                                                        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 border border-green-200">
+                                                            <Check size={12} /> Registered
+                                                        </span>
+                                                    ) : (
+                                                        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 border border-gray-200">
+                                                            Not Registered
+                                                        </span>
+                                                    )}
+                                                </td>
+                                                <td className="px-6 py-4 text-right">
+                                                    <button
+                                                        onClick={() => handleStartCreate(emp._id)}
+                                                        className="text-blue-600 hover:text-blue-800 font-medium text-sm px-3 py-1 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors"
+                                                    >
+                                                        {emp.faceEncoding === "Active" ? "Retrain" : "Register Face"}
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            {/* Mobile Card View */}
+                            <div className="md:hidden flex flex-col gap-3">
+                                {filteredEmployees.map((emp) => (
+                                    <div key={emp._id} className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex flex-col gap-4">
+                                        <div className="flex items-start justify-between">
                                             <div className="flex items-center gap-3">
                                                 {emp.photo ? (
-                                                    <img src={emp.photo} alt={emp.firstName} className="w-10 h-10 rounded-full object-cover border border-gray-200" />
+                                                    <img src={emp.photo} alt={emp.firstName} className="w-12 h-12 rounded-full object-cover border border-gray-200" />
                                                 ) : (
-                                                    <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold">
+                                                    <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold text-lg">
                                                         {emp.firstName.charAt(0)}
                                                     </div>
                                                 )}
-                                                <div className="font-medium text-gray-900">{emp.firstName} {emp.lastName}</div>
+                                                <div>
+                                                    <h4 className="font-bold text-gray-900 text-lg leading-tight">{emp.firstName} {emp.lastName}</h4>
+                                                    <p className="text-xs text-gray-500 font-mono mt-0.5">{emp.employeeId}</p>
+                                                </div>
                                             </div>
-                                        </td>
-                                        <td className="px-6 py-4 text-gray-600">{emp.employeeId}</td>
-                                        <td className="px-6 py-4 text-gray-600">{emp.department}</td>
-                                        <td className="px-6 py-4">
                                             {emp.faceEncoding === "Active" ? (
-                                                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                                    <Check size={12} /> Registered
+                                                <div className="bg-green-100 p-1.5 rounded-full text-green-600">
+                                                    <Check size={16} strokeWidth={3} />
+                                                </div>
+                                            ) : (
+                                                <div className="bg-gray-100 p-1.5 rounded-full text-gray-400">
+                                                    <User size={16} strokeWidth={2} />
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        <div className="flex items-center gap-2 text-sm">
+                                            <span className="bg-blue-50 text-blue-700 px-2.5 py-1 rounded text-xs font-semibold border border-blue-100">
+                                                {emp.department}
+                                            </span>
+                                            {emp.faceEncoding === "Active" ? (
+                                                <span className="text-green-700 text-xs font-medium px-2">
+                                                    Face Data Active
                                                 </span>
                                             ) : (
-                                                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-                                                    Not Registered
+                                                <span className="text-gray-500 text-xs font-medium px-2">
+                                                    No Face Data
                                                 </span>
                                             )}
-                                        </td>
-                                        <td className="px-6 py-4 text-right">
-                                            <button
-                                                onClick={() => handleStartCreate(emp._id)}
-                                                className="text-blue-600 hover:text-blue-800 font-medium text-sm"
-                                            >
-                                                {emp.faceEncoding === "Active" ? "Retrain" : "Register Face"}
-                                            </button>
-                                        </td>
-                                    </tr>
-                                ))
-                            )}
-                        </tbody>
-                    </table>
+                                        </div>
+
+                                        <button
+                                            onClick={() => handleStartCreate(emp._id)}
+                                            className={`w-full py-2.5 rounded-lg font-semibold text-sm transition-all shadow-sm ${emp.faceEncoding === "Active"
+                                                    ? "bg-white border border-blue-200 text-blue-700 hover:bg-blue-50"
+                                                    : "bg-blue-600 text-white hover:bg-blue-700 shadow-blue-200"
+                                                }`}
+                                        >
+                                            {emp.faceEncoding === "Active" ? "Retrain Face Model" : "Register Face"}
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
+                        </>
+                    )}
                 </div>
             </div>
         );

@@ -48,23 +48,19 @@ export default function StoreTable({ activeTab, masterTab, data, loading, onEdit
     // Render table with data
     return (
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-            <div className="overflow-x-auto">
-                <table className="w-full text-sm">
-                    {/* Conditionally render the appropriate table based on active tab */}
-                    {activeTab === "home" && (
-                        <InventoryTable data={data} onEdit={onEdit} onDelete={onDelete} />
-                    )}
+            {/* Conditionally render the appropriate table based on active tab */}
+            {activeTab === "home" && (
+                <InventoryTable data={data} onEdit={onEdit} onDelete={onDelete} />
+            )}
 
-                    {activeTab === "masters" && (
-                        <MastersTable data={data} masterTab={masterTab} onEdit={onEdit} onDelete={onDelete} />
-                    )}
+            {activeTab === "masters" && (
+                <MastersTable data={data} masterTab={masterTab} onEdit={onEdit} onDelete={onDelete} />
+            )}
 
-                    {/* All transaction tabs use the same TransactionsTable component */}
-                    {!["home", "masters"].includes(activeTab) && (
-                        <TransactionsTable data={data} onEdit={onEdit} onDelete={onDelete} />
-                    )}
-                </table>
-            </div>
+            {/* All transaction tabs use the same TransactionsTable component */}
+            {!["home", "masters"].includes(activeTab) && (
+                <TransactionsTable data={data} onEdit={onEdit} onDelete={onDelete} />
+            )}
         </div>
     );
 }

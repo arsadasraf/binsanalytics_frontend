@@ -106,8 +106,8 @@ export default function SkillMaster() {
     return (
         <div className="space-y-4">
             {/* Header Actions */}
-            <div className="flex flex-row justify-between items-center bg-white p-4 rounded-xl shadow-sm border border-gray-100 gap-3 md:gap-4">
-                <div className="relative flex-1 md:flex-none md:w-64">
+            <div className="flex flex-col md:flex-row justify-between items-center bg-white p-4 rounded-xl shadow-sm border border-gray-100 gap-3 md:gap-4">
+                <div className="relative w-full md:w-64">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
                     <input
                         type="text"
@@ -119,51 +119,95 @@ export default function SkillMaster() {
                 </div>
                 <button
                     onClick={handleOpenAdd}
-                    className="flex-none flex items-center justify-center gap-2 px-3 md:px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                    className="w-full md:w-auto flex items-center justify-center gap-2 px-3 md:px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-sm"
                 >
                     <Plus size={18} />
-                    <span className="hidden md:inline">Add Skill</span>
+                    <span>Add Skill</span>
                 </button>
             </div>
 
-            {/* List View */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-                <table className="w-full text-left">
-                    <thead className="bg-gray-50 border-b border-gray-100">
-                        <tr>
-                            <th className="px-6 py-4 font-semibold text-gray-700">Name</th>
-                            <th className="px-6 py-4 font-semibold text-gray-700">Description</th>
-                            <th className="px-6 py-4 font-semibold text-gray-700 text-right">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-100">
-                        {loading ? (
-                            <tr><td colSpan={3} className="px-6 py-8 text-center text-gray-500">Loading...</td></tr>
-                        ) : filteredSkills.length === 0 ? (
-                            <tr><td colSpan={3} className="px-6 py-8 text-center text-gray-500">No skills found</td></tr>
-                        ) : (
-                            filteredSkills.map((skill) => (
-                                <tr key={skill._id} className="hover:bg-gray-50 transition-colors group">
-                                    <td className="px-6 py-4">
-                                        <div className="flex items-center gap-2">
-                                            <div className="p-1.5 bg-orange-50 text-orange-600 rounded-lg">
-                                                <Zap size={16} />
+            {/* Content Area */}
+            <div className="bg-gray-50/50 min-h-[200px]">
+                {loading ? (
+                    <div className="p-6 text-center text-gray-500">Loading skills...</div>
+                ) : filteredSkills.length === 0 ? (
+                    <div className="p-12 text-center text-gray-400 flex flex-col items-center gap-2">
+                        <Search size={32} className="opacity-20" />
+                        <p>No skills found</p>
+                    </div>
+                ) : (
+                    <>
+                        {/* Desktop Table */}
+                        <div className="hidden md:block bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                            <table className="w-full text-left">
+                                <thead className="bg-gray-50 border-b border-gray-100">
+                                    <tr>
+                                        <th className="px-6 py-4 font-semibold text-gray-700">Name</th>
+                                        <th className="px-6 py-4 font-semibold text-gray-700">Description</th>
+                                        <th className="px-6 py-4 font-semibold text-gray-700 text-right">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-gray-100">
+                                    {filteredSkills.map((skill) => (
+                                        <tr key={skill._id} className="hover:bg-gray-50 transition-colors group">
+                                            <td className="px-6 py-4">
+                                                <div className="flex items-center gap-2">
+                                                    <div className="p-1.5 bg-orange-50 text-orange-600 rounded-lg">
+                                                        <Zap size={16} />
+                                                    </div>
+                                                    <span className="font-medium text-gray-800">{skill.name}</span>
+                                                </div>
+                                            </td>
+                                            <td className="px-6 py-4 text-gray-600">{skill.description || "-"}</td>
+                                            <td className="px-6 py-4 text-right">
+                                                <div className="flex justify-end gap-2 transition-opacity">
+                                                    <button onClick={() => handleOpenEdit(skill)} className="p-2 text-blue-500 hover:bg-blue-50 rounded-lg transition-colors"><Edit2 size={18} /></button>
+                                                    <button onClick={() => handleDelete(skill._id)} className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors"><Trash2 size={18} /></button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        {/* Mobile Card View */}
+                        <div className="md:hidden flex flex-col gap-3">
+                            {filteredSkills.map((skill) => (
+                                <div key={skill._id} className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex flex-col gap-3">
+                                    <div className="flex justify-between items-start">
+                                        <div className="flex items-center gap-3">
+                                            <div className="p-2 bg-orange-50 text-orange-600 rounded-lg">
+                                                <Zap size={20} />
                                             </div>
-                                            <span className="font-medium text-gray-800">{skill.name}</span>
+                                            <div>
+                                                <h4 className="font-bold text-gray-900">{skill.name}</h4>
+                                                {skill.description && (
+                                                    <p className="text-sm text-gray-500 mt-0.5 line-clamp-2">{skill.description}</p>
+                                                )}
+                                            </div>
                                         </div>
-                                    </td>
-                                    <td className="px-6 py-4 text-gray-600">{skill.description || "-"}</td>
-                                    <td className="px-6 py-4 text-right">
-                                        <div className="flex justify-end gap-2 transition-opacity">
-                                            <button onClick={() => handleOpenEdit(skill)} className="p-2 text-blue-500 hover:bg-blue-50 rounded-lg transition-colors"><Edit2 size={18} /></button>
-                                            <button onClick={() => handleDelete(skill._id)} className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors"><Trash2 size={18} /></button>
-                                        </div>
-                                    </td>
-                                </tr>
-                            ))
-                        )}
-                    </tbody>
-                </table>
+                                    </div>
+
+                                    <div className="flex items-center gap-2 pt-3 border-t border-gray-50 mt-1">
+                                        <button
+                                            onClick={() => handleOpenEdit(skill)}
+                                            className="flex-1 flex items-center justify-center gap-2 py-2 text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg text-sm font-medium transition-colors"
+                                        >
+                                            <Edit2 size={16} /> Edit
+                                        </button>
+                                        <button
+                                            onClick={() => handleDelete(skill._id)}
+                                            className="flex-1 flex items-center justify-center gap-2 py-2 text-red-600 bg-red-50 hover:bg-red-100 rounded-lg text-sm font-medium transition-colors"
+                                        >
+                                            <Trash2 size={16} /> Delete
+                                        </button>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </>
+                )}
             </div>
 
             {/* Add/Edit Modal */}

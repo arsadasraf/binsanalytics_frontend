@@ -1,6 +1,16 @@
+export interface Skill {
+    _id: string;
+    name: string;
+    description?: string;
+    company: string;
+    createdAt: string;
+    updatedAt: string;
+}
+
 export interface Department {
     _id: string;
     name: string;
+    description?: string;
     company: string;
     createdAt: string;
     updatedAt: string;
@@ -9,6 +19,7 @@ export interface Department {
 export interface Designation {
     _id: string;
     name: string;
+    description?: string;
     company: string;
     createdAt: string;
     updatedAt: string;
