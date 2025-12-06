@@ -446,6 +446,9 @@ function StoreContent() {
             <BillsTabs activeTab={activeTab} />
           </div>
         )}
+
+        {/* Search Bar - Available for all tabs */}
+        <SearchBar searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
         {(activeTab === "dc" || activeTab === "billing" || activeTab === "po" || activeTab === "grn") && (
           <div className="flex items-center gap-2 bg-gray-50 p-1 rounded-lg border border-gray-200">
             <div className="relative">
