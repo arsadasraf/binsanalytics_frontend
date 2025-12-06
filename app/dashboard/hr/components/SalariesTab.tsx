@@ -17,13 +17,13 @@ export default function SalariesTab() {
     const [showSlipModal, setShowSlipModal] = useState(false);
     const [selectedSalary, setSelectedSalary] = useState<Salary | null>(null);
 
-    const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8000';
+    const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
     const fetchSalaries = async () => {
         try {
             setLoading(true);
             const token = localStorage.getItem('token');
-            const res = await axios.get(`${backendUrl}/api/v1/hr/salary`, {
+            const res = await axios.get(`${backendUrl}/api/hr/salary`, {
                 headers: { Authorization: `Bearer ${token}` },
                 params: { month: monthFilter, year: yearFilter }
             });
@@ -43,7 +43,7 @@ export default function SalariesTab() {
         if (!confirm("Are you sure you want to delete this salary record?")) return;
         try {
             const token = localStorage.getItem('token');
-            await axios.delete(`${backendUrl}/api/v1/hr/salary/${id}`, {
+            await axios.delete(`${backendUrl}/api/hr/salary/${id}`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             fetchSalaries();
