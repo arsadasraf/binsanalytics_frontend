@@ -1,8 +1,8 @@
 import Link from "next/link";
-import { Home, Database, UserCheck } from "lucide-react";
+import { Home, Database, UserCheck, Banknote } from "lucide-react";
 
 interface HRTabsProps {
-    activeTab: "home" | "master" | "attendance" | "present";
+    activeTab: "home" | "master" | "attendance" | "present" | "salaries";
 }
 
 export default function HRTabs({ activeTab }: HRTabsProps) {
@@ -52,6 +52,16 @@ export default function HRTabs({ activeTab }: HRTabsProps) {
                 >
                     <Database size={18} />
                     Present List
+                </Link>
+                <Link
+                    href="/dashboard/hr?tab=salaries"
+                    className={`flex items-center gap-2 px-4 py-2 rounded-t-lg font-medium transition-colors border-b-2 ${activeTab === "salaries"
+                        ? "border-blue-600 text-blue-600 bg-blue-50/50"
+                        : "border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50"
+                        }`}
+                >
+                    <Banknote size={18} />
+                    Salaries
                 </Link>
             </div>
         </div>

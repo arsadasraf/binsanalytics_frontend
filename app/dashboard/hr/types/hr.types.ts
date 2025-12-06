@@ -35,6 +35,12 @@ export interface Employee {
     designation: string;
     joiningDate: string;
     status: "Active" | "Inactive" | "Terminated" | "OnLeave";
+    paymentDetails?: {
+        accountNumber: string;
+        bankName: string;
+        ifscCode: string;
+        branchName: string;
+    };
     photo?: string;
     faceEncoding?: string;
     skills: {
@@ -42,6 +48,38 @@ export interface Employee {
         level: number;
         certified: boolean;
     }[];
+    createdAt: string;
+    updatedAt: string;
+}
+
+export interface Salary {
+    _id: string;
+    employee: Employee | string; // Can be populated
+    month: string;
+    year: number;
+    workingDays: number;
+    presentDays: number;
+    salaryComponents: {
+        basic: number;
+        hra: number;
+        conveyance: number;
+        medical: number;
+        specialAllowance: number;
+        pf: number;
+        professionalTax: number;
+    };
+    overtime: {
+        hours: number;
+        rate: number;
+        amount: number;
+    };
+    deductions: number;
+    incentives?: number;
+    grossSalary: number;
+    netSalary: number;
+    status: "Draft" | "Paid";
+    paymentDate?: string;
+    remarks?: string;
     createdAt: string;
     updatedAt: string;
 }
