@@ -287,19 +287,19 @@ export default function ResponsiveDashboardLayout({ children }: { children: Reac
   };
 
   return (
-    <div className="flex h-screen bg-gray-50">
+    <div className="flex h-screen w-full bg-white text-gray-900 font-sans overflow-hidden">
       {/* Desktop Sidebar */}
       <aside
-        className={`hidden lg:flex flex-col bg-white border-r border-gray-100 shadow-sm transition-all duration-300 ease-in-out ${desktopSidebarOpen ? "w-64" : "w-20"
-          }`}
+        className={`${desktopSidebarOpen ? "w-64" : "hidden lg:block w-0 opacity-0 overflow-hidden"
+          } bg-white border-r border-gray-100 flex-col transition-all duration-300 ease-in-out hidden lg:flex`}
       >
-        <div className={`p-6 border-b border-gray-50 ${desktopSidebarOpen ? "" : "flex justify-center p-4"}`}>
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center shrink-0">
-              <span className="text-white font-bold">B</span>
-            </div>
-            {desktopSidebarOpen && <span className="font-bold text-xl text-gray-900">BinsAnalytics</span>}
+        <div className="h-16 flex items-center gap-3 px-6 border-b border-gray-100">
+          <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center">
+            <span className="text-white font-bold text-xl">B</span>
           </div>
+          <span className={`font-bold text-xl text-gray-900 ${!desktopSidebarOpen && "hidden"}`}>
+            BinsErp
+          </span>
         </div>
 
         <div className="flex-1 overflow-y-auto p-4 space-y-1">
@@ -421,48 +421,50 @@ export default function ResponsiveDashboardLayout({ children }: { children: Reac
       </div>
 
       {/* Mobile Sidebar Drawer (for global nav) */}
-      {mobileSidebarOpen && (
-        <div className="fixed inset-0 z-40 lg:hidden">
-          <div
-            className="absolute inset-0 bg-black/50 backdrop-blur-sm"
-            onClick={() => setMobileSidebarOpen(false)}
-          />
-          <div className="absolute inset-y-0 left-0 w-64 bg-white shadow-xl flex flex-col animate-in slide-in-from-left duration-300">
-            <div className="p-6 border-b border-gray-50 flex items-center justify-between">
-              <span className="font-bold text-xl text-gray-900">Menu</span>
-              <button
-                onClick={() => setMobileSidebarOpen(false)}
-                className="p-2 text-gray-500 hover:bg-gray-100 rounded-lg"
-              >
-                <ChevronDown className="rotate-90" size={20} />
-              </button>
-            </div>
-            <div className="flex-1 overflow-y-auto p-4 space-y-1">
-              {navItems.map((item) => (
-                <div key={item.label}>
-                  <Link
-                    href={item.href}
-                    onClick={() => setMobileSidebarOpen(false)}
-                    className="flex items-center gap-3 px-3 py-3 rounded-xl text-gray-600 hover:bg-gray-50 font-medium"
-                  >
-                    <item.icon size={20} />
-                    {item.label}
-                  </Link>
-                </div>
-              ))}
-            </div>
-            <div className="p-4 border-t border-gray-50">
-              <button
-                onClick={handleLogout}
-                className="w-full flex items-center gap-3 px-3 py-3 text-red-600 hover:bg-red-50 rounded-xl font-medium"
-              >
-                <LogOut size={20} />
-                Sign Out
-              </button>
+      {
+        mobileSidebarOpen && (
+          <div className="fixed inset-0 z-40 lg:hidden">
+            <div
+              className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+              onClick={() => setMobileSidebarOpen(false)}
+            />
+            <div className="absolute inset-y-0 left-0 w-64 bg-white shadow-xl flex flex-col animate-in slide-in-from-left duration-300">
+              <div className="p-6 border-b border-gray-50 flex items-center justify-between">
+                <span className="font-bold text-xl text-gray-900">Menu</span>
+                <button
+                  onClick={() => setMobileSidebarOpen(false)}
+                  className="p-2 text-gray-500 hover:bg-gray-100 rounded-lg"
+                >
+                  <ChevronDown className="rotate-90" size={20} />
+                </button>
+              </div>
+              <div className="flex-1 overflow-y-auto p-4 space-y-1">
+                {navItems.map((item) => (
+                  <div key={item.label}>
+                    <Link
+                      href={item.href}
+                      onClick={() => setMobileSidebarOpen(false)}
+                      className="flex items-center gap-3 px-3 py-3 rounded-xl text-gray-600 hover:bg-gray-50 font-medium"
+                    >
+                      <item.icon size={20} />
+                      {item.label}
+                    </Link>
+                  </div>
+                ))}
+              </div>
+              <div className="p-4 border-t border-gray-50">
+                <button
+                  onClick={handleLogout}
+                  className="w-full flex items-center gap-3 px-3 py-3 text-red-600 hover:bg-red-50 rounded-xl font-medium"
+                >
+                  <LogOut size={20} />
+                  Sign Out
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )
+      }
 
       {/* Mobile Module Switcher FAB */}
       <div className="lg:hidden fixed bottom-20 left-4 z-40">

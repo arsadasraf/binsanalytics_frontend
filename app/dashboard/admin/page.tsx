@@ -4,6 +4,9 @@ import { useState } from "react";
 import LoadingSpinner from "@/src/components/LoadingSpinner";
 import ErrorAlert from "@/src/components/ErrorAlert";
 import SuccessAlert from "@/src/components/SuccessAlert";
+
+export const dynamic = "force-dynamic";
+
 import {
   useGetUsersQuery,
   useCreateUserMutation,
@@ -307,9 +310,9 @@ export default function AdminDashboard() {
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                           <span className={`px-2 py-1 text-xs font-semibold rounded-full ${user.department === "HR" ? "bg-blue-100 text-blue-800" :
-                              user.department === "Store" ? "bg-green-100 text-green-800" :
-                                user.department === "PPC" ? "bg-orange-100 text-orange-800" :
-                                  "bg-indigo-100 text-indigo-800"
+                            user.department === "Store" ? "bg-green-100 text-green-800" :
+                              user.department === "PPC" ? "bg-orange-100 text-orange-800" :
+                                "bg-indigo-100 text-indigo-800"
                             }`}>
                             {user.department}
                           </span>
@@ -357,9 +360,9 @@ export default function AdminDashboard() {
                           </p>
                         </div>
                         <span className={`px-2 py-1 text-xs font-semibold rounded-full ${user.department === "HR" ? "bg-blue-100 text-blue-800" :
-                            user.department === "Store" ? "bg-green-100 text-green-800" :
-                              user.department === "PPC" ? "bg-orange-100 text-orange-800" :
-                                "bg-indigo-100 text-indigo-800"
+                          user.department === "Store" ? "bg-green-100 text-green-800" :
+                            user.department === "PPC" ? "bg-orange-100 text-orange-800" :
+                              "bg-indigo-100 text-indigo-800"
                           }`}>
                           {user.department}
                         </span>

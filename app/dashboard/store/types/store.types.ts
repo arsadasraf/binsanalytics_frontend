@@ -15,6 +15,7 @@ export interface BankDetails {
     ifscCode?: string;
     bankName?: string;
     branch?: string;
+    branchName?: string;
     accountName?: string;
 }
 

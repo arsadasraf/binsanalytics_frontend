@@ -63,47 +63,35 @@ export default function SalarySlipModal({ isOpen, onClose, salary }: SalarySlipM
                     </div>
                 </div>
 
-                {/* Slip Content */}
-                <div className="p-8 bg-white overflow-x-auto">
-                    <div ref={slipRef} className="bg-white p-8 min-w-[700px] border border-gray-100 mx-auto text-black print:border-none print:p-0 print:w-full">
-                        {/* Company Header */}
-                        <div className="text-center mb-8 border-b-2 border-gray-800 pb-4">
-                            <h1 className="text-2xl font-bold uppercase tracking-wide">BINS Analytics</h1>
-                            <p className="text-sm text-gray-600">Company Address Line 1, City, State - Zip Code</p>
-                            <p className="text-sm text-gray-600">Email: info@binsanalytics.com | Phone: +91 9876543210</p>
-                            <h2 className="text-xl font-bold mt-4 underline">SALARY SLIP FOR {monthName.toUpperCase()} {year}</h2>
+                <div ref={slipRef}>
+                    <div className="p-6">
+                        <div className="flex justify-between border-b border-gray-200 pb-1">
+                            <span className="font-semibold text-gray-600">Employee Name:</span>
+                            <span className="font-bold">{employee.name}</span>
                         </div>
-
-                        {/* Employee Details */}
-                        <div className="grid grid-cols-2 gap-x-8 gap-y-2 mb-6 text-sm">
-                            <div className="flex justify-between border-b border-gray-200 pb-1">
-                                <span className="font-semibold text-gray-600">Employee Name:</span>
-                                <span className="font-bold">{employee.name}</span>
-                            </div>
-                            <div className="flex justify-between border-b border-gray-200 pb-1">
-                                <span className="font-semibold text-gray-600">Employee ID:</span>
-                                <span className="font-bold">{employee.employeeId}</span>
-                            </div>
-                            <div className="flex justify-between border-b border-gray-200 pb-1">
-                                <span className="font-semibold text-gray-600">Designation:</span>
-                                <span>{employee.designation}</span>
-                            </div>
-                            <div className="flex justify-between border-b border-gray-200 pb-1">
-                                <span className="font-semibold text-gray-600">Department:</span>
-                                <span>{employee.department}</span>
-                            </div>
-                            <div className="flex justify-between border-b border-gray-200 pb-1">
-                                <span className="font-semibold text-gray-600">Days Worked:</span>
-                                <span>{salary.presentDays} / {salary.workingDays}</span>
-                            </div>
-                            <div className="flex justify-between border-b border-gray-200 pb-1">
-                                <span className="font-semibold text-gray-600">Bank Account:</span>
-                                <span>{employee.paymentDetails?.accountNumber || "N/A"}</span>
-                            </div>
+                        <div className="flex justify-between border-b border-gray-200 pb-1">
+                            <span className="font-semibold text-gray-600">Employee ID:</span>
+                            <span className="font-bold">{employee.employeeId}</span>
+                        </div>
+                        <div className="flex justify-between border-b border-gray-200 pb-1">
+                            <span className="font-semibold text-gray-600">Designation:</span>
+                            <span>{employee.designation}</span>
+                        </div>
+                        <div className="flex justify-between border-b border-gray-200 pb-1">
+                            <span className="font-semibold text-gray-600">Department:</span>
+                            <span>{employee.department}</span>
+                        </div>
+                        <div className="flex justify-between border-b border-gray-200 pb-1">
+                            <span className="font-semibold text-gray-600">Days Worked:</span>
+                            <span>{salary.presentDays} / {salary.workingDays}</span>
+                        </div>
+                        <div className="flex justify-between border-b border-gray-200 pb-1">
+                            <span className="font-semibold text-gray-600">Bank Account:</span>
+                            <span>{employee.paymentDetails?.accountNumber || "N/A"}</span>
                         </div>
 
                         {/* Salary Details Table */}
-                        <div className="grid grid-cols-2 border-2 border-gray-800 mb-6">
+                        <div className="grid grid-cols-2 border-2 border-gray-800 mb-6 mt-4">
                             {/* Earnings */}
                             <div className="border-r-2 border-gray-800">
                                 <div className="bg-gray-100 font-bold p-2 text-center border-b-2 border-gray-800 uppercase text-sm">Earnings</div>

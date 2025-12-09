@@ -57,8 +57,26 @@ export default function AttendanceTab() {
                 setLastScanResult({ status: "error", message: "Face not recognized", timestamp: new Date() });
             }
 
-        } catch (error) {
+        } catch (error: any) {
             console.error("Scan error:", error);
+            let errorMessage = "An unknown error occurred during scanning.";
+
+            if (error.response) {
+                // Server responded with a status code outside of 2xx
+                errorMessage = error.response.data?.message || `Server Error: ${error.response.status}`;
+            } else if (error.request) {
+                // Request happened but no response received
+                errorMessage = "Cannot connect to server. Please ensure the backend is running.";
+            } else {
+                // Error setting up request
+                errorMessage = error.message;
+            }
+
+            setLastScanResult({
+                status: "error",
+                message: errorMessage,
+                timestamp: new Date()
+            });
         } finally {
             setScanning(false);
         }

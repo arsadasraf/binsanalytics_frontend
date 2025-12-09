@@ -43,6 +43,21 @@ export interface Employee {
     };
     photo?: string;
     faceEncoding?: string;
+    experience?: string;
+    degree?: string;
+    salary?: {
+        basic: number;
+        hra: number;
+        conveyance: number;
+        medical: number;
+        specialAllowance: number;
+        pf: number;
+        professionalTax: number;
+        grossSalary: number;
+        netSalary: number;
+        deductions?: number;
+        incentives?: number;
+    };
     skills: {
         name: string;
         level: number;

@@ -1,4 +1,4 @@
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
 interface FetchOptions extends RequestInit {
   token?: string | null;
@@ -10,8 +10,8 @@ export const apiRequest = async (
 ): Promise<Response> => {
   const { token, ...fetchOptions } = options;
 
-  const headers: HeadersInit = {
-    ...fetchOptions.headers,
+  const headers: Record<string, string> = {
+    ...(fetchOptions.headers as Record<string, string>),
   };
 
   // Only set Content-Type to application/json if body is not FormData

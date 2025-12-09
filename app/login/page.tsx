@@ -3,11 +3,11 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { useLoginMutation } from "@/src/store/services/authService";
+import { persistSession } from "@/src/lib/session";
 import ErrorAlert from "@/src/components/ErrorAlert";
 import SuccessAlert from "@/src/components/SuccessAlert";
 import LoadingSpinner from "@/src/components/LoadingSpinner";
-import { useLoginMutation } from "@/src/store/services/authService";
-import { persistSession } from "@/src/lib/session";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -16,6 +16,7 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+
   const [login, { isLoading }] = useLoginMutation();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -74,7 +75,7 @@ export default function LoginPage() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
               </svg>
             </div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-2" onClick={() => router.push("/")}>BinsAnalytics ERP</h1>
+            <h1 className="text-3xl font-bold text-gray-900 mb-2" onClick={() => router.push("/")}>BinsErp</h1>
             <p className="text-gray-600">Shop Floor Management System</p>
           </div>
 
