@@ -1,6 +1,6 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
-const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://35.194.18.160:8000";
 
 const getToken = () => {
   if (typeof window === "undefined") return null;
