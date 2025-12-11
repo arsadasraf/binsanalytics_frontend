@@ -53,10 +53,12 @@ export default function PresentTab() {
             const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
             if (!token) return;
 
-            const today = new Date().toISOString().split("T")[0]; // YYYY-MM-DD
+            const now = new Date();
+            const start = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0);
+            const end = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
 
             const response = await axios.get(
-                `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/api/hr/attendance?startDate=${today}&endDate=${today}`,
+                `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/api/hr/attendance?startDate=${start.toISOString()}&endDate=${end.toISOString()}`,
                 {
                     headers: { Authorization: `Bearer ${token}` }
                 }
@@ -165,8 +167,8 @@ export default function PresentTab() {
                                             </td>
                                             <td className="px-6 py-4">
                                                 <span className={`px-2.5 py-1 rounded-full text-xs font-bold border ${record.status === 'Present'
-                                                        ? 'bg-green-100 text-green-700 border-green-200'
-                                                        : 'bg-gray-100 text-gray-700 border-gray-200'
+                                                    ? 'bg-green-100 text-green-700 border-green-200'
+                                                    : 'bg-gray-100 text-gray-700 border-gray-200'
                                                     }`}>
                                                     {record.status}
                                                 </span>
@@ -187,8 +189,8 @@ export default function PresentTab() {
                                             <p className="text-xs text-gray-500 font-mono">{record.employee?.employeeId}</p>
                                         </div>
                                         <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide border ${record.status === 'Present'
-                                                ? 'bg-green-50 text-green-700 border-green-100'
-                                                : 'bg-gray-50 text-gray-700 border-gray-100'
+                                            ? 'bg-green-50 text-green-700 border-green-100'
+                                            : 'bg-gray-50 text-gray-700 border-gray-100'
                                             }`}>
                                             {record.status}
                                         </span>
